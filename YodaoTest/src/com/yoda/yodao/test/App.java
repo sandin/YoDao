@@ -7,7 +7,7 @@ public class App {
 	
 	public static void main(String[] args) {
 		
-		UserDao dao = new UserDaoImpl();
+		UserDao dao = new UserDaoImpl(null);
 		dao.findAll();
 		
 	}
