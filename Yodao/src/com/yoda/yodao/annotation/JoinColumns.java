@@ -43,18 +43,30 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
 /**
- * Specifies the primary key property or field of an entity.
+ * Defines mapping for the composite foreign keys. This annotation 
+ * groups {@link JoinColumn} annotations for the same relationship.
+ *
+ * <p> When the <code>JoinColumns</code> annotation is used, 
+ * both the {@link JoinColumn#name name} and the {@link 
+ * JoinColumn#referencedColumnName referencedColumnName} elements 
+ * must be specified in each such {@link JoinColumn} annotation.
  *
  * <pre>
- *   Example:
  *
- *   &#064;Id
- *   public Long getId() { return id; }
+ *    Example:
+ *    &#064;ManyToOne
+ *    &#064;JoinColumns({
+ *        &#064;JoinColumn(name="ADDR_ID", referencedColumnName="ID"),
+ *        &#064;JoinColumn(name="ADDR_ZIP", referencedColumnName="ZIP")
+ *    })
+ *    public Address getAddress() { return address; }
  * </pre>
  *
  * @since Java Persistence 1.0
  */
-@Target({METHOD, FIELD})
+@Target({METHOD, FIELD}) 
 @Retention(CLASS)
 
-public @interface Id {}
+public @interface JoinColumns {
+    JoinColumn[] value();
+}

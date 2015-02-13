@@ -43,18 +43,80 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
 /**
- * Specifies the primary key property or field of an entity.
+ * Defines a many-valued association with one-to-many multiplicity.
+ * 
+ * <p> If the collection is defined using generics to specify the 
+ * element type, the associated target entity type need not be 
+ * specified; otherwise the target entity class must be specified.
  *
  * <pre>
- *   Example:
  *
- *   &#064;Id
- *   public Long getId() { return id; }
+ *    Example 1: One-to-Many association using generics
+ *
+ *    In Customer class:
+ *
+ *    &#064;OneToMany(cascade=ALL, mappedBy="customer")
+ *    public Set<Order> getOrders() { return orders; }
+ *
+ *    In Order class:
+ *
+ *    &#064;ManyToOne
+ *    &#064;JoinColumn(name="CUST_ID", nullable=false)
+ *    public Customer getCustomer() { return customer; }
+ *
+ *    Example 2: One-to-Many association without using generics
+ *
+ *    In Customer class:
+ *
+ *    &#064;OneToMany(targetEntity=com.acme.Order.class, cascade=ALL,
+ *            mappedBy="customer")
+ *    public Set getOrders() { return orders; }
+ *
+ *    In Order class:
+ *
+ *    &#064;ManyToOne
+ *    &#064;JoinColumn(name="CUST_ID", nullable=false)
+ *    public Customer getCustomer() { return customer; }
  * </pre>
  *
  * @since Java Persistence 1.0
  */
-@Target({METHOD, FIELD})
+@Target({METHOD, FIELD}) 
 @Retention(CLASS)
 
-public @interface Id {}
+public @interface OneToMany {
+
+    /**
+     * (Optional) The entity class that is the target
+     * of the association. Optional only if the collection
+     * property is defined using Java generics.
+     * Must be specified otherwise.
+     *
+     * <p> Defaults to the parameterized type of
+     * the collection when defined using generics.
+     */
+    Class targetEntity() default void.class;
+
+    /** 
+     * (Optional) The operations that must be cascaded to 
+     * the target of the association.
+     * <p> Defaults to no operations being cascaded.
+     */
+    CascadeType[] cascade() default {};
+
+    /** (Optional) Whether the association should be
+     * lazily loaded or must be eagerly fetched. The
+     * {@link FetchType#EAGER EAGER} strategy is a 
+     * requirement on the persistenceprovider runtime 
+     * that the associatedentities must be eagerly fetched. 
+     * The {@link FetchType#LAZY LAZY} strategy is a hint 
+     * to the persistence provider runtime.
+     */
+    FetchType fetch() default FetchType.LAZY;
+
+    /** 
+     * The field that owns the relationship. Required unless 
+     * the relationship is unidirectional.
+     */
+    String mappedBy() default "";
+}

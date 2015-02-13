@@ -35,26 +35,28 @@
  */
 package com.yoda.yodao.annotation;
 
-import static java.lang.annotation.ElementType.FIELD;
-import static java.lang.annotation.ElementType.METHOD;
-import static java.lang.annotation.RetentionPolicy.CLASS;
-
-import java.lang.annotation.Retention;
-import java.lang.annotation.Target;
-
 /**
- * Specifies the primary key property or field of an entity.
- *
- * <pre>
- *   Example:
- *
- *   &#064;Id
- *   public Long getId() { return id; }
- * </pre>
+ * Defines the set of cascadable operations that are propagated 
+ * to the associated entity.
+ * The value <code>cascade=ALL<code> is equivalent to 
+ * <code>cascade={PERSIST, MERGE, REMOVE, REFRESH}</code>.
  *
  * @since Java Persistence 1.0
  */
-@Target({METHOD, FIELD})
-@Retention(CLASS)
+public enum CascadeType { 
 
-public @interface Id {}
+    /** Cascade all operations */
+    ALL, 
+
+    /** Cascade persist operation */
+    PERSIST, 
+
+    /** Cascade merge operation */
+    MERGE, 
+
+    /** Cascade remove operation */
+    REMOVE,
+
+    /** Cascade refresh operation */
+    REFRESH
+}

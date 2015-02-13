@@ -35,7 +35,6 @@
  */
 package com.yoda.yodao.annotation;
 
-import static java.lang.annotation.ElementType.FIELD;
 import static java.lang.annotation.ElementType.METHOD;
 import static java.lang.annotation.RetentionPolicy.CLASS;
 
@@ -43,18 +42,14 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
 /**
- * Specifies the primary key property or field of an entity.
- *
- * <pre>
- *   Example:
- *
- *   &#064;Id
- *   public Long getId() { return id; }
- * </pre>
+ * Is used to specify callback methods for the corresponding 
+ * lifecycle event. This annotation may be applied to methods 
+ * of an entity class, a mapped superclass, or a callback 
+ * listener class.
  *
  * @since Java Persistence 1.0
  */
-@Target({METHOD, FIELD})
+@Target({METHOD})
 @Retention(CLASS)
 
-public @interface Id {}
+public @interface PostUpdate {}

@@ -12,22 +12,20 @@ import com.yoda.yodao.annotation.Table;
  * 
  */
 @Entity
-@Table(name = "sys_token")
+@Table
 public class AccessToken {
+	
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private long id;
 
     // 获取到的凭证
-    @Column(name = "access_token")
     private String accessToken;
 
     // 凭证有效时间 秒，-1永不过期
-    @Column(name = "expires_in")
     private int expiresIn;
 
     // 过期后刷新token
-    @Column(name = "refresh_token")
     private String refreshToken;
 
     public long getId() {

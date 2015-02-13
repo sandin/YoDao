@@ -43,13 +43,18 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
 /**
- * Specifies the primary key property or field of an entity.
+ * This annotation specifies that the property or field is 
+ * not persistent. It is used to annotate a property or field 
+ * of an entity class, mapped superclass, or embeddable class. 
  *
  * <pre>
- *   Example:
- *
- *   &#064;Id
- *   public Long getId() { return id; }
+ *    Example:
+ *    &#064;Entity
+ *    public class Employee {
+ *        &#064;Id int id;
+ *        &#064;Transient User currentUser;
+ *        ...
+ *    }
  * </pre>
  *
  * @since Java Persistence 1.0
@@ -57,4 +62,4 @@ import java.lang.annotation.Target;
 @Target({METHOD, FIELD})
 @Retention(CLASS)
 
-public @interface Id {}
+public @interface Transient {}

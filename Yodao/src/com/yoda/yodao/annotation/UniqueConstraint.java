@@ -35,26 +35,33 @@
  */
 package com.yoda.yodao.annotation;
 
-import static java.lang.annotation.ElementType.FIELD;
-import static java.lang.annotation.ElementType.METHOD;
 import static java.lang.annotation.RetentionPolicy.CLASS;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
 /**
- * Specifies the primary key property or field of an entity.
+ * This annotation is used to specify that a unique constraint 
+ * is to be included in the generated DDL for a primary or secondary table.
  *
  * <pre>
- *   Example:
- *
- *   &#064;Id
- *   public Long getId() { return id; }
+ *    Example:
+ *    &#064;Entity
+ *    &#064;Table(
+ *        name="EMPLOYEE", 
+ *        uniqueConstraints=
+ *            &#064;UniqueConstraint(columnNames={"EMP_ID", "EMP_NAME"})
+ *    )
+ *    public class Employee { ... }
  * </pre>
  *
  * @since Java Persistence 1.0
  */
-@Target({METHOD, FIELD})
+@Target({}) 
 @Retention(CLASS)
 
-public @interface Id {}
+public @interface UniqueConstraint {
+
+    /** (Required) An array of the column names that make up the constraint. */
+    String[] columnNames();
+}
