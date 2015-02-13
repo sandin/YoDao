@@ -39,7 +39,7 @@ public class Table {
 	}
 
 	public String brewJava() {
-		return DaoGenerator.generate(this);
+		return new DaoGenerator().generate(this);
 	}
 
 	public Element getElement() {
@@ -64,6 +64,17 @@ public class Table {
 
 	public void setEntityClass(Clazz entityClass) {
 		this.entityClass = entityClass;
+	}
+	
+	public Field getPKField() {
+		if (fields != null) {
+			for (Field field : fields) {
+				if (field.isId()) {
+					return field;
+				}
+			}
+		}
+		return null;
 	}
 
 	@Override

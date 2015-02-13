@@ -1,15 +1,15 @@
 package com.yoda.yodao.test;
 
-import com.yoda.yodao.test.dao.UserDao;
-import com.yoda.yodao.test.dao.impl.UserDaoImpl;
+import java.util.List;
+
+import com.hispeed.magician.dao.CustomerDao;
+import com.hispeed.magician.model.Customer;
 
 public class App {
 	
 	public static void main(String[] args) {
-		
-		UserDao dao = new UserDaoImpl(null);
-		dao.findAll();
-		
+		CustomerDao dao = new CustomerDao(null);
+		List<Customer> list = dao.findAll();
 	}
 
 }

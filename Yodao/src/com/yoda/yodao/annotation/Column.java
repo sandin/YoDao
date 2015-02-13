@@ -76,5 +76,11 @@ public @interface Column {
      * (Applies only if a decimal column is used.)
      */
     int scale() default 0;
+    
+    /**
+     * (Optional) DEFAULT Values 
+     * @return
+     */
+    String defValue() default "";
 
 }

@@ -1,7 +1,12 @@
 package com.yoda.yodao;
 
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 import android.content.ContentValues;
 import android.database.Cursor;
@@ -91,6 +96,11 @@ public abstract class BaseDao<T> implements IDao<T> {
 	 */
 	public abstract ContentValues objectToValues(T row);
 	
+	/**
+	 * Get Create Database Table SQL as String
+	 */
+	public abstract String getCreateTableSql();
+
 	/*-------------------------- API ---------------------------*/
 
 	@Override
@@ -146,7 +156,7 @@ public abstract class BaseDao<T> implements IDao<T> {
 		SQLiteDatabase db = getDb(false);
 		Cursor cursor = db.query(mTableName, null, selection, selectionArgs,
 				groupBy, having, orderBy);
-		return cursorToObject(cursor);
+		return _cursorToObject(cursor);
 	}
 
 	@Override
@@ -160,7 +170,7 @@ public abstract class BaseDao<T> implements IDao<T> {
 		log("find one by sql: %s", sql);
 		SQLiteDatabase db = getDb(false);
 		Cursor cursor = db.rawQuery(sql, null);
-		return cursorToObject(cursor);
+		return _cursorToObject(cursor);
 	}
 
 	@Override
@@ -181,7 +191,7 @@ public abstract class BaseDao<T> implements IDao<T> {
 		SQLiteDatabase db = getDb(false);
 		Cursor cursor = db.query(mTableName, null, selection, selectionArgs,
 				groupBy, having, orderBy);
-		List<T> list = cursorToList(cursor, null);
+		List<T> list = _cursorToList(cursor, null);
 		cursor.close();
 		return list;
 	}
@@ -197,7 +207,7 @@ public abstract class BaseDao<T> implements IDao<T> {
 		log("find list by sql: %s", sql);
 		SQLiteDatabase db = getDb(false);
 		Cursor cursor = db.rawQuery(sql, null);
-		List<T> list = cursorToList(cursor, null);
+		List<T> list = _cursorToList(cursor, null);
 		cursor.close();
 		return list;
 	}
@@ -218,7 +228,7 @@ public abstract class BaseDao<T> implements IDao<T> {
 		if (entity != null) {
 			long id = getPK(entity);
 			if (id > 0) {
-				count = delete(id); 
+				count = delete(id);
 			}
 		}
 		return count;
@@ -262,7 +272,8 @@ public abstract class BaseDao<T> implements IDao<T> {
 	 *            true为读写模式，false为只读
 	 * @return
 	 */
-	protected SQLiteDatabase getDb(boolean writeable) {
+	@Override
+	public SQLiteDatabase getDb(boolean writeable) {
 		if (writeable) {
 			return mOpenHelper.getWritableDatabase();
 		} else {
@@ -270,7 +281,8 @@ public abstract class BaseDao<T> implements IDao<T> {
 		}
 	}
 
-	protected long countByFields(String selections, String[] selectionArgs) {
+	@Override
+	public long countByFields(String selections, String[] selectionArgs) {
 		log("count by fields: where %s, args %s", selections, selectionArgs);
 		SQLiteDatabase db = getDb(false);
 		long count = db.query(mTableName, null, selections, selectionArgs,
@@ -278,7 +290,7 @@ public abstract class BaseDao<T> implements IDao<T> {
 		return count;
 	}
 
-	protected void log(String format, Object... args) {
+	protected final void log(String format, Object... args) {
 		String msg = "[" + mTableName + "] " + format;
 		if (args.length > 1) {
 			msg = String.format(format, args);
@@ -288,15 +300,15 @@ public abstract class BaseDao<T> implements IDao<T> {
 		}
 	}
 
-	protected String whereClauseByPK() {
+	protected final String whereClauseByPK() {
 		return mPrimaryKey + " = ?";
 	}
 
-	protected String[] whereArgsByPK(long id) {
+	protected final String[] whereArgsByPK(long id) {
 		return new String[] { String.valueOf(id) };
 	}
 
-	protected T cursorToObject(Cursor cursor) {
+	protected final T _cursorToObject(Cursor cursor) {
 		if (cursor != null && cursor.getCount() > 0) {
 			cursor.moveToFirst();
 			T obj = cursorToObject(cursor, null);
@@ -312,7 +324,7 @@ public abstract class BaseDao<T> implements IDao<T> {
 	 * @param cursor
 	 * @return
 	 */
-	public List<T> cursorToList(Cursor cursor, String[] columns) {
+	public final List<T> _cursorToList(Cursor cursor, String[] columns) {
 		List<T> list = null;
 		if (cursor != null && cursor.getCount() > 0) {
 			list = new ArrayList<T>();
@@ -321,6 +333,60 @@ public abstract class BaseDao<T> implements IDao<T> {
 			}
 		}
 		return list;
+	}
+	
+	public void setPrimaryKey(String pk) {
+		mPrimaryKey = pk;
+	}
+	
+	public String getPrimaryKey() {
+		return mPrimaryKey;
+	}
+
+	/*---------------------------- Helper ------------------------------*/
+
+	protected boolean parseBoolean(int value) {
+		return value != 0;
+	}
+
+	protected Date parseDatetime(String datetime) {
+		try {
+			return getDefaultDateFormat().parse(datetime);
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+
+	protected String formatDatetime(Date date) {
+		try {
+			return getDefaultDateFormat().format(date);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return "";
+	}
+
+	protected static final String AGO_FULL_DATE_FORMATTER = "yyyy-MM-dd HH:mm:ss";
+
+	protected static ThreadLocal<DateFormat> TL_AGO_FULL_DATE_FORMATTER = new ThreadLocal<DateFormat>();
+
+	protected DateFormat getDefaultDateFormat() {
+		return getDataFormatThreadSafe(TL_AGO_FULL_DATE_FORMATTER,
+				AGO_FULL_DATE_FORMATTER);
+	}
+
+	protected static DateFormat getDataFormatThreadSafe(
+			ThreadLocal<DateFormat> threadLocal, String format) {
+		if (threadLocal == null) {
+			threadLocal = new ThreadLocal<DateFormat>();
+		}
+		DateFormat df = threadLocal.get();
+		if (df == null) {
+			df = new SimpleDateFormat(format, Locale.US);
+			threadLocal.set(df);
+		}
+		return df;
 	}
 
 }

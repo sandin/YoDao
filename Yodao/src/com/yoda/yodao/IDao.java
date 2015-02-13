@@ -2,6 +2,8 @@ package com.yoda.yodao;
 
 import java.util.List;
 
+import android.database.sqlite.SQLiteDatabase;
+
 /**
  * Interface DAO
  * 
@@ -130,6 +132,15 @@ public interface IDao<T> {
 	long count();
 
 	/**
+	 * Returns the number of entities with selections available.
+	 * 
+	 * @param selections
+	 * @param selectionArgs
+	 * @return
+	 */
+	long countByFields(String selections, String[] selectionArgs);
+
+	/**
 	 * Deletes the entity with the given id.
 	 * 
 	 * @param id
@@ -163,5 +174,20 @@ public interface IDao<T> {
 	 * @return
 	 */
 	int deleteByFields(String selection, String[] selectionArgs);
+
+	/**
+	 * Get database instance
+	 * 
+	 * @param writeable
+	 * @return
+	 */
+	SQLiteDatabase getDb(boolean writeable);
+	
+	/**
+	 * Get create database SQL
+	 * 
+	 * @return
+	 */
+	String getCreateTableSql();
 
 }

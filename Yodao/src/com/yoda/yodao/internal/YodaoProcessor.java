@@ -26,6 +26,7 @@ import javax.tools.JavaFileObject;
 import com.yoda.yodao.annotation.Column;
 import com.yoda.yodao.annotation.Entity;
 import com.yoda.yodao.annotation.Id;
+import com.yoda.yodao.annotation.NotColumn;
 
 /**
  * YodaoProcessor
@@ -37,7 +38,7 @@ public final class YodaoProcessor extends AbstractProcessor {
 
 	private static final String TAG = YodaoProcessor.class.getSimpleName();
 	private static final boolean DEBUG = true;
-	
+
 	private static final String DAO_SUFFIX = "Dao";
 	private static final String DAO_PACKNAME = ".dao";
 
@@ -88,14 +89,19 @@ public final class YodaoProcessor extends AbstractProcessor {
 	private void createSourceFile(Filer filer, Table table) {
 		Element typeElement = table.getElement();
 		try {
+			String javaContent = table.brewJava();
 			Clazz daoClazz = table.getDaoClass();
-			JavaFileObject jfo = filer.createSourceFile(daoClazz.getCanonicalName());
+			JavaFileObject jfo = filer.createSourceFile(daoClazz
+					.getCanonicalName());
 			Writer writer = jfo.openWriter();
-			writer.write(table.brewJava());
+			writer.write(javaContent);
 			writer.flush();
 			writer.close();
+		} catch (IllegalStateException e) {
+			error(typeElement, "Unable to generate DAO for entity %s: %s",
+					typeElement, e.getMessage());
 		} catch (IOException e) {
-			error(typeElement, "Unable to write injector for type %s: %s",
+			error(typeElement, "Unable to generate DAO for entity %s: %s",
 					typeElement, e.getMessage());
 		}
 	}
@@ -109,8 +115,8 @@ public final class YodaoProcessor extends AbstractProcessor {
 	private Table parseTable(Element element) {
 		Table table = new Table();
 		table.setElement(element);
-		
-		table.setTableName(getTableName(element));
+
+		table.setTableName(Utils.toLowerCase(getTableName(element)));
 		String className = getTableType(element);
 		Clazz clazz = parseToDaoClazz(className);
 		table.setDaoClass(parseToDaoClazz(className));
@@ -139,11 +145,17 @@ public final class YodaoProcessor extends AbstractProcessor {
 	private Field parseField(Element element) {
 		Field field = null;
 		if (isTargetField(element)) {
+			Column column = element.getAnnotation(Column.class);
+
 			String columnName = getColumnName(element);
 			String columnType = getColumnType(element);
 			field = new Field();
+			field.setFieldName(element.getSimpleName().toString());
+			field.setFieldType(columnType);
 			field.setColumnName(columnName);
-			field.setColumnType(columnType);
+			field.setColumnType(columnType); // TODO: convert java type to
+												// database type
+			field.setNullable(column != null ? column.nullable() : true);
 			field.setIsId(isPKColumn(element));
 			log(TAG, "field: " + field);
 		}
@@ -180,13 +192,13 @@ public final class YodaoProcessor extends AbstractProcessor {
 		String columnName = null;
 		Column column = element.getAnnotation(Column.class);
 		Id id = element.getAnnotation(Id.class);
-		if (column != null || id != null) {
-			if (column != null) {
-				columnName = column.name();
-			}
-			if (columnName == null || column.length() == 0) {
-				columnName = element.getSimpleName().toString(); // field name
-			}
+		if (column != null) {
+			columnName = column.name();
+		}
+		// is id or name is empty
+		if (columnName == null || columnName.length() == 0) {
+			columnName = Utils.toLowerCase(element.getSimpleName().toString()); // field
+																				// name
 		}
 		return columnName;
 	}
@@ -194,7 +206,7 @@ public final class YodaoProcessor extends AbstractProcessor {
 	private boolean isPKColumn(Element element) {
 		return element.getAnnotation(Id.class) != null;
 	}
-	
+
 	public static Clazz parseToEntityClazz(String clazzName) {
 		Clazz clazz = new Clazz();
 		int index = clazzName.lastIndexOf(".");
@@ -206,7 +218,7 @@ public final class YodaoProcessor extends AbstractProcessor {
 		clazz.className = clazzName.substring(index + 1, clazzName.length());
 		return clazz;
 	}
-	
+
 	public static Clazz parseToDaoClazz(String clazzName) {
 		Clazz clazz = new Clazz();
 		int index = clazzName.lastIndexOf(".");
@@ -214,7 +226,8 @@ public final class YodaoProcessor extends AbstractProcessor {
 			throw new IllegalArgumentException(
 					"model's package name must has at last two `.`");
 		}
-		clazz.className = clazzName.substring(index + 1, clazzName.length()) + DAO_SUFFIX;
+		clazz.className = clazzName.substring(index + 1, clazzName.length())
+				+ DAO_SUFFIX;
 
 		String packageName = clazzName.substring(0, index);
 		index = packageName.lastIndexOf(".");
@@ -228,8 +241,7 @@ public final class YodaoProcessor extends AbstractProcessor {
 
 	private boolean isTargetField(Element element) {
 		return element != null && element.getKind() == ElementKind.FIELD //
-				&& (element.getAnnotation(Id.class) != null || //
-				element.getAnnotation(Column.class) != null);
+				&& element.getAnnotation(NotColumn.class) == null;
 	}
 
 	public void log(String tag, String msg) {

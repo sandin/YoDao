@@ -6,9 +6,8 @@ import java.util.Map;
 
 import org.junit.Assert;
 
-
 public class TemplateEngine {
-	
+
 	public static String render(String format, Map<String, Object> args) {
 		if (format != null) {
 			if (args != null) {
@@ -26,12 +25,12 @@ public class TemplateEngine {
 		}
 		return format;
 	}
-	
+
 	public static void main(String[] args) {
 		Map<String, Object> maps = new HashMap<String, Object>();
 		maps.put("T", "User");
-		Assert.assertEquals("public User() {}", render("public ::T::() {}", maps));
-		
+		Assert.assertEquals("public User() {}",
+				render("public ::T::() {}", maps));
 	}
 
 }
