@@ -16,7 +16,7 @@ public class User {
 	@Column(name = "name")
 	private String name;
 
-	@Column(name = "age_")
+	@Column(name = "age")
 	private long age;
 
 	private String privateField;

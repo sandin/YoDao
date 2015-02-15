@@ -65,11 +65,14 @@ public class DaoGenerator {
 		if (table == null) {
 			throw new IllegalArgumentException("arg0[table] cann't be null");
 		}
+		
+		DaoInfo dao = table.getDaoInfo();
 
 		StringBuilder sb = new StringBuilder();
 		sb.append("package " + table.getDaoClass().packageName + ";\n");
 		sb.append("\n");
 		sb.append("import com.yoda.yodao.BaseDao;\n");
+		sb.append("import " + dao.getDaoClass().getCanonicalName() + ";\n");
 		sb.append("\n");
 		sb.append("import android.database.Cursor;\n");
 		sb.append("import android.content.ContentValues;\n");
@@ -83,7 +86,7 @@ public class DaoGenerator {
 		sb.append(" */\n");
 		sb.append("public class " + table.getDaoClass().className
 				+ " extends BaseDao<" + table.getEntityClass().className
-				+ "> {\n");
+				+ "> implements " + dao.getDaoClass().className + " {\n");
 		sb.append("\n");
 		genStaticFields(sb, table);
 		genConstructor(sb, table);

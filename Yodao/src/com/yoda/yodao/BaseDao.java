@@ -25,9 +25,9 @@ import android.util.Log;
  * @param <ID>
  *            PK
  */
-public abstract class BaseDao<T> implements IDao<T> {
+public abstract class BaseDao<T> implements YoDao<T> {
 	private static final String TAG = YoDao.TAG;
-	private static boolean DEBUG = YoDao.DEBUG;;
+	private static boolean DEBUG = true;
 
 	/**
 	 * Android database open helper
@@ -262,6 +262,11 @@ public abstract class BaseDao<T> implements IDao<T> {
 		SQLiteDatabase db = getDb(true);
 		return db.delete(mTableName, selection, selectionArgs);
 	}
+	
+	@Override
+	public void debug() {
+		DEBUG = true;
+	}
 
 	/*----------------------------------------------*/
 
@@ -388,5 +393,5 @@ public abstract class BaseDao<T> implements IDao<T> {
 		}
 		return df;
 	}
-
+	
 }

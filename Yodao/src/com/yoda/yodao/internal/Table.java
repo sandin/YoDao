@@ -18,6 +18,8 @@ public class Table {
 
 	private Clazz entityClass;
 
+	private DaoInfo daoInfo;
+
 	private List<Field> fields;
 
 	private Element element;
@@ -65,7 +67,7 @@ public class Table {
 	public void setEntityClass(Clazz entityClass) {
 		this.entityClass = entityClass;
 	}
-	
+
 	public Field getPKField() {
 		if (fields != null) {
 			for (Field field : fields) {
@@ -77,11 +79,19 @@ public class Table {
 		return null;
 	}
 
+	public DaoInfo getDaoInfo() {
+		return daoInfo;
+	}
+
+	public void setDaoInfo(DaoInfo daoInfo) {
+		this.daoInfo = daoInfo;
+	}
+
 	@Override
 	public String toString() {
 		return "Table [tableName=" + tableName + ", daoClass=" + daoClass
-				+ ", entityClass=" + entityClass + ", fields=" + fields
-				+ ", element=" + element + "]";
+				+ ", entityClass=" + entityClass + ", daoInfo=" + daoInfo
+				+ ", fields=" + fields + "]";
 	}
 
 }

@@ -19,14 +19,18 @@ import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import javax.tools.JavaFileObject;
 
+import com.yoda.yodao.YoDao;
 import com.yoda.yodao.annotation.Column;
 import com.yoda.yodao.annotation.Entity;
 import com.yoda.yodao.annotation.Id;
 import com.yoda.yodao.annotation.NotColumn;
+import com.yoda.yodao.annotation.Repository;
 
 /**
  * YodaoProcessor
@@ -39,8 +43,8 @@ public final class YodaoProcessor extends AbstractProcessor {
 	private static final String TAG = YodaoProcessor.class.getSimpleName();
 	private static final boolean DEBUG = true;
 
-	private static final String DAO_SUFFIX = "Dao";
-	private static final String DAO_PACKNAME = ".dao";
+	private static final String DAO_SUFFIX = "DaoImpl";
+	private static final String DAO_PACKNAME = ".dao.impl";
 
 	private Elements elementUtils;
 	private Types typeUtils;
@@ -59,6 +63,7 @@ public final class YodaoProcessor extends AbstractProcessor {
 	public Set<String> getSupportedAnnotationTypes() {
 		Set<String> types = new HashSet<String>();
 		types.add(Entity.class.getCanonicalName());
+		types.add(Repository.class.getCanonicalName());
 		return types;
 	}
 
@@ -71,17 +76,43 @@ public final class YodaoProcessor extends AbstractProcessor {
 	public boolean process(Set<? extends TypeElement> elements,
 			RoundEnvironment env) {
 		List<Table> tables = new ArrayList<Table>();
-		for (TypeElement te : elements) {
-			for (Element element : env.getElementsAnnotatedWith(Entity.class)) {
-				Table table = parseTable(element);
-				if (table != null) {
-					tables.add(table);
+		for (Element element : env.getElementsAnnotatedWith(Entity.class)) {
+			Table table = parseTable(element);
+			if (table != null) {
+				tables.add(table);
+			}
+		}
+
+		List<DaoInfo> daos = new ArrayList<DaoInfo>();
+		for (Element element : env.getElementsAnnotatedWith(Repository.class)) {
+			try {
+				DaoInfo dao = RepositoryParser.parser(element);
+				daos.add(dao);
+				log(TAG, "dao: " + dao);
+			} catch (IllegalStateException e) {
+				error(element, e.getMessage());
+				continue;
+			}
+		}
+
+		for (DaoInfo dao : daos) {
+			for (Table table : tables) {
+				Clazz c1 = dao.getEntityClass();
+				Clazz c2 = table.getEntityClass();
+				if (c1 != null && c2 != null) {
+					String n1 = c1.getCanonicalName();
+					String n2 = c2.getCanonicalName();
+					if (n1 != null && n1.equals(n2)) {
+						table.setDaoInfo(dao);
+					}
 				}
 			}
 		}
 
 		for (Table table : tables) {
-			createSourceFile(filer, table);
+			if (table.getDaoInfo() != null) {
+				createSourceFile(filer, table);
+			}
 		}
 		return true;
 	}
@@ -118,7 +149,6 @@ public final class YodaoProcessor extends AbstractProcessor {
 
 		table.setTableName(Utils.toLowerCase(getTableName(element)));
 		String className = getTableType(element);
-		Clazz clazz = parseToDaoClazz(className);
 		table.setDaoClass(parseToDaoClazz(className));
 		table.setEntityClass(parseToEntityClazz(className));
 
@@ -247,15 +277,17 @@ public final class YodaoProcessor extends AbstractProcessor {
 	public void log(String tag, String msg) {
 		if (DEBUG) {
 			Messager messager = processingEnv.getMessager();
-			messager.printMessage(NOTE, String.format("[%s] %s]", tag, msg));
+			messager.printMessage(NOTE, String.format("[%s] %s", tag, msg));
 		}
 	}
 
+	/*-
 	public void error(Element element, String tag, String msg) {
 		Messager messager = processingEnv.getMessager();
 		messager.printMessage(ERROR, String.format("[%s] %s", tag, msg),
 				element);
 	}
+	 -*/
 
 	private void error(Element element, String message, Object... args) {
 		if (args.length > 0) {
@@ -263,5 +295,4 @@ public final class YodaoProcessor extends AbstractProcessor {
 		}
 		processingEnv.getMessager().printMessage(ERROR, message, element);
 	}
-
 }
