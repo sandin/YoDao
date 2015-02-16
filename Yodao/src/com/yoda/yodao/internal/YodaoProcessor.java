@@ -19,13 +19,10 @@ import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.type.TypeKind;
-import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import javax.tools.JavaFileObject;
 
-import com.yoda.yodao.YoDao;
 import com.yoda.yodao.annotation.Column;
 import com.yoda.yodao.annotation.Entity;
 import com.yoda.yodao.annotation.Id;

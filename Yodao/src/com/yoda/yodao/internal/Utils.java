@@ -109,6 +109,7 @@ public class Utils {
 		final TypeMirror[] result = { null };
 
 		type.accept(new SimpleTypeVisitor6<Void, Void>() {
+			
 			@Override
 			public Void visitDeclared(DeclaredType declaredType, Void v) {
 				List<? extends TypeMirror> typeArguments = declaredType

@@ -2,11 +2,15 @@ package com.yoda.yodao.internal;
 
 import java.util.Arrays;
 
+import com.yoda.yodao.internal.query.YoQuery;
+
 public class DaoMethod {
 
 	private String methodName;
 
-	private Object[] methodArgs;
+	private DaoParam[] methodParams;
+
+	private String returnType;
 
 	public String getMethodName() {
 		return methodName;
@@ -16,18 +20,31 @@ public class DaoMethod {
 		this.methodName = methodName;
 	}
 
-	public Object[] getMethodArgs() {
-		return methodArgs;
+	public DaoParam[] getMethodParams() {
+		return methodParams;
 	}
 
-	public void setMethodArgs(Object[] methodArgs) {
-		this.methodArgs = methodArgs;
+	public void setMethodParams(DaoParam[] methodParams) {
+		this.methodParams = methodParams;
+	}
+
+	public String getReturnType() {
+		return returnType;
+	}
+
+	public void setReturnType(String returnType) {
+		this.returnType = returnType;
+	}
+	
+	public YoQuery toQuery() {
+		return RepositoryParser.parseDaoMethodToQuery(this);
 	}
 
 	@Override
 	public String toString() {
 		return "DaoMethod [methodName=" + methodName + ", methodArgs="
-				+ Arrays.toString(methodArgs) + "]";
+				+ Arrays.toString(methodParams) + ", returnType=" + returnType
+				+ "]";
 	}
 
 }
