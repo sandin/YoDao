@@ -60,7 +60,7 @@ Step 1: Write your model, use JAP(Java Persistence API) style.
 ```
 
 
-Step 2: Write your DAO
+Step 2: Write your DAO interface. (Yes, just a interface)
 
 
 ```java
