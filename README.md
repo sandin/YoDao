@@ -9,7 +9,7 @@ Usage
 
 Step 1: Write your model, use JAP(Java Persistence API) style.
 
-
+```java
     package com.yoda.yodao.test.model;
 
     import com.yoda.yodao.annotation.Column;
@@ -57,11 +57,13 @@ Step 1: Write your model, use JAP(Java Persistence API) style.
         this.age = age;
       }
     }
+```
 
 
 Step 2: Write your DAO
 
 
+```java
     package com.yoda.yodao.test.dao;
 
     import java.util.List;
@@ -80,10 +82,12 @@ Step 2: Write your DAO
       User findOneByNameOrderByAge(String name);
 
     }
+```
 
 
 Step 3: Just use this Dao in your code, Yodao will Generator all the codes for your, include create table, Dao implements Class.
 
+```java
     UserDao userDao = new UserDaoImpl(dbOpenHelper);
 
     // Query
@@ -104,6 +108,7 @@ Step 3: Just use this Dao in your code, Yodao will Generator all the codes for y
     // Delete
     userDao.delete(user.getId());
     userDao.deleteAll();
+```
 
 
 Performance
