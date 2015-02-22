@@ -5,8 +5,10 @@ import com.yoda.yodao.annotation.Entity;
 import com.yoda.yodao.annotation.GeneratedValue;
 import com.yoda.yodao.annotation.GenerationType;
 import com.yoda.yodao.annotation.Id;
+import com.yoda.yodao.annotation.Table;
 
 @Entity
+@Table(name="user")
 public class User {
 
 	@Id

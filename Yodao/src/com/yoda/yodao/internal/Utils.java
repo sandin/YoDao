@@ -1,6 +1,9 @@
 package com.yoda.yodao.internal;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -160,5 +163,12 @@ public class Utils {
 		clazz.className = clazzName.substring(index + 1, clazzName.length());
 		return clazz;
 	}
-
+	
+	public static boolean isListType(String clazzName) {
+		return clazzName != null && (clazzName.startsWith(List.class.getName())
+				||clazzName.startsWith(ArrayList.class.getName())
+				||clazzName.startsWith(Set.class.getName())
+				||clazzName.startsWith(HashSet.class.getName()));
+	}
+	
 }

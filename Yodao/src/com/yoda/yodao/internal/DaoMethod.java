@@ -12,6 +12,8 @@ public class DaoMethod {
 
 	private String returnType;
 
+	private YoQuery query;
+
 	public String getMethodName() {
 		return methodName;
 	}
@@ -35,16 +37,24 @@ public class DaoMethod {
 	public void setReturnType(String returnType) {
 		this.returnType = returnType;
 	}
-	
+
 	public YoQuery toQuery() {
 		return RepositoryParser.parseDaoMethodToQuery(this);
 	}
 
+	public YoQuery getQuery() {
+		return query;
+	}
+
+	public void setQuery(YoQuery query) {
+		this.query = query;
+	}
+
 	@Override
 	public String toString() {
-		return "DaoMethod [methodName=" + methodName + ", methodArgs="
+		return "DaoMethod [methodName=" + methodName + ", methodParams="
 				+ Arrays.toString(methodParams) + ", returnType=" + returnType
-				+ "]";
+				+ ", query=" + query + "]";
 	}
 
 }

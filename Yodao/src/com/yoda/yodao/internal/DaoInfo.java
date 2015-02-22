@@ -2,6 +2,8 @@ package com.yoda.yodao.internal;
 
 import java.util.List;
 
+import com.yoda.yodao.internal.query.YoQuery;
+
 public class DaoInfo {
 
 	private Clazz entityClass;
@@ -9,6 +11,8 @@ public class DaoInfo {
 	private Clazz daoClass;
 
 	private List<DaoMethod> methods;
+
+	private boolean isInterface;
 
 	public Clazz getEntityClass() {
 		return entityClass;
@@ -34,10 +38,18 @@ public class DaoInfo {
 		this.daoClass = daoClass;
 	}
 
+	public boolean isInterface() {
+		return isInterface;
+	}
+
+	public void setIsInterface(boolean isInterface) {
+		this.isInterface = isInterface;
+	}
+
 	@Override
 	public String toString() {
 		return "DaoInfo [entityClass=" + entityClass + ", daoClass=" + daoClass
-				+ ", methods=" + methods + "]";
+				+ ", methods=" + methods + ", isInterface=" + isInterface + "]";
 	}
 
 }

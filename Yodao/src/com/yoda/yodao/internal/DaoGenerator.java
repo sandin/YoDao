@@ -7,6 +7,15 @@ import java.util.Map;
 
 import org.junit.Assert;
 
+import sun.nio.ch.SelChImpl;
+
+import com.yoda.yodao.internal.query.YoGroupBy;
+import com.yoda.yodao.internal.query.YoOrderBy;
+import com.yoda.yodao.internal.query.YoQuery;
+import com.yoda.yodao.internal.query.YoQuery.CRUD;
+import com.yoda.yodao.internal.query.YoSelection;
+import com.yoda.yodao.internal.query.YoOrderBy.Order;
+
 public class DaoGenerator {
 	private static final String TAB = "    ";
 	private static final String TAB2 = TAB + TAB;
@@ -65,7 +74,7 @@ public class DaoGenerator {
 		if (table == null) {
 			throw new IllegalArgumentException("arg0[table] cann't be null");
 		}
-		
+
 		DaoInfo dao = table.getDaoInfo();
 
 		StringBuilder sb = new StringBuilder();
@@ -84,9 +93,14 @@ public class DaoGenerator {
 		sb.append(" * AUTO GENERATE BY YODAO, DO NOT MODIFY IT! \n");
 		sb.append(" * " + new Date().toString() + "\n");
 		sb.append(" */\n");
-		sb.append("public class " + table.getDaoClass().className
-				+ " extends BaseDao<" + table.getEntityClass().className
-				+ "> implements " + dao.getDaoClass().className + " {\n");
+		if (dao.isInterface()) {
+			sb.append("public class " + table.getDaoClass().className
+					+ " extends BaseDao<" + table.getEntityClass().className
+					+ "> implements " + dao.getDaoClass().className + " {\n");
+		} else {
+			sb.append("public class " + table.getDaoClass().className
+					+ " extends " + dao.getDaoClass().className + " {\n");
+		}
 		sb.append("\n");
 		genStaticFields(sb, table);
 		genConstructor(sb, table);
@@ -96,10 +110,128 @@ public class DaoGenerator {
 		genSetPK(sb, table);
 		genGetTableName(sb, table);
 		genGetCreateTableSql(sb, table);
+		genMethods(sb, table);
 		sb.append("\n");
 		sb.append("}\n");
 
 		return sb.toString();
+	}
+
+	private void genMethods(StringBuilder sb, Table table) {
+		DaoInfo dao = table.getDaoInfo();
+		List<DaoMethod> methods = dao.getMethods();
+		if (methods != null) {
+			for (DaoMethod method : methods) {
+				genMethod(sb, method);
+			}
+		}
+	}
+
+	private void genMethod(StringBuilder sb, DaoMethod method) {
+		DaoParam[] params = method.getMethodParams();
+		sb.append(TAB + "public " + method.getReturnType() + " "
+				+ method.getMethodName() + "(");
+		if (params != null) {
+			for (int i = 0; i < params.length; i++) {
+				DaoParam p = params[i];
+				sb.append(p.getType() + " arg" + i);
+				if (i < params.length - 1) {
+					sb.append(", ");
+				}
+			}
+		}
+		sb.append(") {\n");
+
+		YoQuery query = method.getQuery();
+
+		// Selections
+		String selection = "null";
+		String selectionArgs = "null";
+		List<YoSelection> selections = query.getSelections();
+		if (selections != null && selections.size() > 0) {
+			selection = "";
+			selectionArgs = "";
+			String args = "";
+			for (int i = 0; i < selections.size(); i++) {
+				YoSelection where = selections.get(i);
+				if (i > 0) {
+					selection += where.isOr() ? " OR " : " AND ";
+				}
+				selection += Utils.toLowerCase(where.getField()) + " = ? ";
+				args += "String.valueOf(arg" + where.getArg() + "), ";
+			}
+			selectionArgs = "new String[] { " + args + " }";
+			selection = "\"" + selection + "\"";
+		}
+
+		// GroupBys
+		String groupBy = "null";
+		List<YoGroupBy> groupBys = query.getGroupBys();
+		if (groupBys != null && groupBys.size() > 0) {
+			groupBy = "";
+			for (int i = 0; i < groupBys.size(); i++) {
+				YoGroupBy group = groupBys.get(i);
+				if (i > 0) {
+					selection += " AND ";
+				}
+				groupBy += Utils.toLowerCase(group.getField());
+			}
+			groupBy = "\"" + groupBy + "\"";
+		}
+
+		// Havings
+		String having = "null"; // TODO
+
+		// Orders
+		String orderBy = "null";
+		List<YoOrderBy> orderBys = query.getOrderBys();
+		if (orderBys != null && orderBys.size() > 0) {
+			orderBy = "";
+			for (int i = 0; i < orderBys.size(); i++) {
+				YoOrderBy order = orderBys.get(i);
+				if (i > 0) {
+					orderBy += " AND ";
+				}
+				orderBy += Utils.toLowerCase(order.getField());
+				orderBy += order.getOrder() == Order.DESC ? " DESC " : "";
+			}
+			orderBy = "\"" + orderBy + "\"";
+		}
+
+		// MethodName
+		String methodName = null;
+		switch (query.getCrud()) {
+		case READ:
+			String returnType = method.getReturnType();
+			boolean isList = Utils.isListType(returnType);
+			methodName = isList ? "findListByFields" : "findOneByFields";
+			sb.append(TAB2
+					+ String.format(
+							"return %s(/* where */%s, /* args */ %s, /* group by */ %s, /* having */ %s, /* order by */ %s);\n",
+							methodName, selection, selectionArgs, groupBy,
+							having, orderBy));
+			break;
+		case DELETE:
+			methodName = "deleteByFields";
+			sb.append(TAB2
+					+ String.format(
+							"return %s(/* where */%s, /* args */ %s);\n",
+							methodName, selection, selectionArgs));
+			break;
+		case UPDATE:
+			methodName = "save";
+			// TODO:
+			break;
+		case CREATE:
+			methodName = "save";
+			// TODO:
+			break;
+		default:
+			break;
+		}
+
+		sb.append(TAB + "}\n");
+		sb.append("\n");
 	}
 
 	// STATIC FIELDS
@@ -114,7 +246,7 @@ public class DaoGenerator {
 		// create table SQL
 		List<Field> fields = table.getFields();
 		sb.append(TAB
-				+ "private static final String CREATE_TABLE_SQL = \" CREATE TABLE `crm_customer` (\"\n");
+				+ "private final static String CREATE_TABLE_SQL = \" CREATE TABLE `crm_customer` (\"\n");
 		if (fields != null) {
 			String format = TAB3 + "+ \"`%s`\t%s\t%s\t%s\t%s\"\n";
 			for (int i = 0; i < fields.size(); i++) {

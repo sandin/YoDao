@@ -9,10 +9,10 @@ import com.yoda.yodao.test.model.User;
 @Repository
 public interface UserDao extends YoDao<User> {
 	
-	List<User> findByNameAndAge(String name, int age);
+	List<User> findByNameAndAgeOrderByAge(String name, int age);
 
-	User findOneByNameAndAge(String name, int age);
-
-	User findOneByNameOrderByAge(String name);
+	User findOneByNameGroupByNameOrderByAge(String name);
+	
+	int deleteByName(String name);
 
 }
