@@ -197,7 +197,7 @@ public class DaoGenerator {
 		}
 
 		// Havings
-		String having = "null"; // TODO
+		String having = "null"; // TODO: having
 
 		// Orders
 		String orderBy = "null";
@@ -237,11 +237,11 @@ public class DaoGenerator {
 			break;
 		case UPDATE:
 			methodName = "save";
-			// TODO:
+			// TODO: update methods
 			break;
 		case CREATE:
 			methodName = "save";
-			// TODO:
+			// TODO: create methods 
 			break;
 		default:
 			break;

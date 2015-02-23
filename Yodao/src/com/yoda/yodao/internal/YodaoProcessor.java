@@ -244,25 +244,25 @@ public final class YodaoProcessor extends AbstractProcessor {
 		if (joinOn == null || joinOn.length() == 0) {
 			joinOn = field.getFieldName() + "_id";
 		}
-		// TODO:
+		// TODO: OneToOne
 		error(element, "Cann't support OneToOne annotation yet.");
 	}
 
 	private void parseOneToMany(Element element, Field field,
 			OneToMany oneToMany) {
-		// TODO:
+		// TODO: OneToMany
 		error(element, "Cann't support OneToMany annotation yet.");
 	}
 
 	private void parseManyToOne(Element element, Field field,
 			ManyToOne manyToOne) {
-		// TODO:
+		// TODO: ManyToOne
 		error(element, "Cann't support ManyToOne annotation yet.");
 	}
 
 	private void parseManyToMany(Element element, Field field,
 			ManyToMany manyToMany) {
-		// TODO:
+		// TODO: ManyToMany
 		error(element, "Cann't support ManyToMany annotation yet.");
 	}
 
