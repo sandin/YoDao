@@ -7,14 +7,11 @@ import java.util.Map;
 
 import org.junit.Assert;
 
-import sun.nio.ch.SelChImpl;
-
 import com.yoda.yodao.internal.query.YoGroupBy;
 import com.yoda.yodao.internal.query.YoOrderBy;
-import com.yoda.yodao.internal.query.YoQuery;
-import com.yoda.yodao.internal.query.YoQuery.CRUD;
-import com.yoda.yodao.internal.query.YoSelection;
 import com.yoda.yodao.internal.query.YoOrderBy.Order;
+import com.yoda.yodao.internal.query.YoQuery;
+import com.yoda.yodao.internal.query.YoSelection;
 
 public class DaoGenerator {
 	private static final String TAB = "    ";
@@ -47,6 +44,23 @@ public class DaoGenerator {
 	TAB + "@Override\n" //
 			+ TAB + "public String getCreateTableSql() {\n" //
 			+ TAB2 + "return CREATE_TABLE_SQL;\n" //
+			+ TAB + "}\n" //
+			+ TAB + "\n";
+
+	public static String FORMAT_ON_CREATE_TABLE = //
+	TAB + "@Override\n" //
+			+ TAB + "public void onCreateTable(SQLiteDatabase db) {\n" //
+			+ TAB2 + "db.execSQL(this.getCreateTableSql());\n" //
+			+ TAB + "}\n" //
+			+ TAB + "\n";
+
+	public static String FORMAT_ON_UPGRADE_TABLE = //
+	TAB
+			+ "@Override\n" //
+			+ TAB
+			+ "public void onUpgradeTable(SQLiteDatabase db, int oldVersion, int newVersion) {\n" //
+			+ TAB2
+			+ "db.execSQL(\"DROP TABLE IF EXISTS \" + this.getTableName());\n" //
 			+ TAB + "}\n" //
 			+ TAB + "\n";
 
@@ -85,6 +99,7 @@ public class DaoGenerator {
 		sb.append("\n");
 		sb.append("import android.database.Cursor;\n");
 		sb.append("import android.content.ContentValues;\n");
+		sb.append("import android.database.sqlite.SQLiteDatabase;\n");
 		sb.append("import android.database.sqlite.SQLiteOpenHelper;\n");
 		sb.append("\n");
 		sb.append("import " + table.getEntityClass().getCanonicalName() + ";\n");
@@ -110,6 +125,8 @@ public class DaoGenerator {
 		genSetPK(sb, table);
 		genGetTableName(sb, table);
 		genGetCreateTableSql(sb, table);
+		genOnCreateTable(sb, table);
+		genOnUpgradeTable(sb, table);
 		genMethods(sb, table);
 		sb.append("\n");
 		sb.append("}\n");
@@ -302,6 +319,14 @@ public class DaoGenerator {
 		}
 		sb.append(TAB + "}\n");
 		sb.append("\n");
+		
+		// empty constructor
+		sb.append(TAB
+				+ String.format("public %s() {\n",
+						clazz.className));
+		sb.append(TAB2 + "this(null);\n");
+		sb.append(TAB + "}\n");
+		sb.append("\n");
 	}
 
 	// cursorToObject
@@ -469,9 +494,19 @@ public class DaoGenerator {
 		sb.append(format(FORMAT_GET_TABLE_NAME, args));
 	}
 
-	// getCreateTableSql
+	// createTableSql
 	private void genGetCreateTableSql(StringBuilder sb, Table table) {
 		sb.append(format(FORMAT_GET_CREATE_TABLE_SQL, null));
+	}
+
+	// onCreateTable
+	private void genOnCreateTable(StringBuilder sb, Table table) {
+		sb.append(format(FORMAT_ON_CREATE_TABLE, null));
+	}
+
+	// onUpgradeTable
+	private void genOnUpgradeTable(StringBuilder sb, Table table) {
+		sb.append(format(FORMAT_ON_UPGRADE_TABLE, null));
 	}
 
 	// Helper

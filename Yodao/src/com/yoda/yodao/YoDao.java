@@ -3,6 +3,7 @@ package com.yoda.yodao;
 import java.util.List;
 
 import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteOpenHelper;
 
 /**
  * Interface DAO
@@ -191,6 +192,24 @@ public interface YoDao<T> {
 	 * @return
 	 */
 	String getCreateTableSql();
+	
+	/**
+	 * Create Table
+	 * 
+	 * @see SQLiteOpenHelper#onCreate(SQLiteDatabase)
+	 * @param db
+	 */
+	void onCreateTable(SQLiteDatabase db);
+	
+	/**
+	 * Upgrade table
+	 * 
+	 * @see SQLiteOpenHelper#onUpgrade(SQLiteDatabase, int, int)
+	 * @param db
+	 * @param oldVersion
+	 * @param newVersion
+	 */
+	void onUpgradeTable(SQLiteDatabase db, int oldVersion, int newVersion);
 	
 	/**
 	 * DEBUG or not

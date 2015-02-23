@@ -116,6 +116,7 @@ public final class YodaoProcessor extends AbstractProcessor {
 				createSourceFile(filer, table);
 			}
 		}
+		createSourceFile(filer, tables); // for DAO factory
 		return true;
 	}
 
@@ -136,6 +137,24 @@ public final class YodaoProcessor extends AbstractProcessor {
 		} catch (IOException e) {
 			error(typeElement, "Unable to generate DAO for entity %s: %s",
 					typeElement, e.getMessage());
+		}
+	}
+
+	private void createSourceFile(Filer filer, List<Table> tables) {
+		try {
+			String javaContent = FactoryGenerator.generate(tables);
+			if (javaContent != null) {
+				JavaFileObject jfo = filer.createSourceFile(FactoryGenerator
+						.getCanonicalName());
+				Writer writer = jfo.openWriter();
+				writer.write(javaContent);
+				writer.flush();
+				writer.close();
+			}
+		} catch (IllegalStateException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 	}
 
