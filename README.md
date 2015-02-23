@@ -88,7 +88,7 @@ Step 2: Write your DAO interface. (Yes, just a interface)
 Step 3: Just use this Dao in your code, Yodao will generate all the codes for your, include create table, Dao implements Class.
 
 ```java
-    UserDao userDao = new UserDaoImpl(dbOpenHelper);
+    UserDao userDao = DaoFactory.create(UserDao.class, openHelper);
 
     // Query
     List<User> users = userDao.findAll();
