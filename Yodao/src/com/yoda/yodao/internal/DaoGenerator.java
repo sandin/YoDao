@@ -262,8 +262,10 @@ public class DaoGenerator {
 
 		// create table SQL
 		List<Field> fields = table.getFields();
-		sb.append(TAB
-				+ "private final static String CREATE_TABLE_SQL = \" CREATE TABLE `crm_customer` (\"\n");
+		sb.append(String
+				.format(TAB
+						+ "private final static String CREATE_TABLE_SQL = \" CREATE TABLE `%s` (\"\n",
+						tableName));
 		if (fields != null) {
 			String format = TAB3 + "+ \"`%s`\t%s\t%s\t%s\t%s\"\n";
 			for (int i = 0; i < fields.size(); i++) {
@@ -317,13 +319,12 @@ public class DaoGenerator {
 			sb.append(String.format(TAB2 + "setPrimaryKey(%s);\n",
 					getColumnName(pk)));
 		}
+		sb.append(TAB2 + "mTableName = TABLE_NAME;\n");
 		sb.append(TAB + "}\n");
 		sb.append("\n");
-		
+
 		// empty constructor
-		sb.append(TAB
-				+ String.format("public %s() {\n",
-						clazz.className));
+		sb.append(TAB + String.format("public %s() {\n", clazz.className));
 		sb.append(TAB2 + "this(null);\n");
 		sb.append(TAB + "}\n");
 		sb.append("\n");
@@ -452,6 +453,9 @@ public class DaoGenerator {
 		List<Field> fields = table.getFields();
 		if (fields != null) {
 			for (Field field : fields) {
+				if (field.isId()) { // don't save PK into DB
+					continue;
+				}
 				String javaType = field.getFieldType();
 				String columnName = getColumnName(field);
 				String getter = field.getGetterMethodName();

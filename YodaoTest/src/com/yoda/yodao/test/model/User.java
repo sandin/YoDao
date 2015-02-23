@@ -1,21 +1,14 @@
 package com.yoda.yodao.test.model;
 
-import java.util.List;
-
-import com.yoda.yodao.annotation.CascadeType;
 import com.yoda.yodao.annotation.Column;
 import com.yoda.yodao.annotation.Entity;
-import com.yoda.yodao.annotation.FetchType;
 import com.yoda.yodao.annotation.GeneratedValue;
 import com.yoda.yodao.annotation.GenerationType;
 import com.yoda.yodao.annotation.Id;
-import com.yoda.yodao.annotation.JoinColumn;
-import com.yoda.yodao.annotation.OneToMany;
-import com.yoda.yodao.annotation.OneToOne;
 import com.yoda.yodao.annotation.Table;
 
 @Entity
-@Table(name = "user")
+@Table(name = "sys_user")
 public class User {
 
 	@Id

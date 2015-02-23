@@ -5,8 +5,8 @@ import java.util.List;
 
 public class FactoryGenerator {
 
-	public static final String DAO_FACTORY_CLASS_NAME = "YoDaoFactory";
-	public static final String DAO_FACTORY_PACKAGE_NAME = "com.yodao";
+	public static final String DAO_FACTORY_CLASS_NAME = "DaoFactory";
+	public static final String DAO_FACTORY_PACKAGE_NAME = "com.yoda.yodao";
 
 	private static final String TAB = "    ";
 	private static final String TAB2 = TAB + TAB;
@@ -99,7 +99,8 @@ public class FactoryGenerator {
 		sb.append(TAB + "public static <T> T create(Class<T> daoClass) {\n");
 		for (Table table : tables) {
 			DaoInfo dao = table.getDaoInfo();
-			sb.append(TAB2 + "if (daoClass == UserDao.class) {\n");
+			sb.append(TAB2 + "if (daoClass == " + dao.getDaoClass().className
+					+ ".class) {\n");
 			sb.append(TAB3 + "return (T) new " + table.getDaoClass().className
 					+ "();\n");
 			sb.append(TAB2 + "}\n");
@@ -110,10 +111,12 @@ public class FactoryGenerator {
 		sb.append("\n");
 
 		sb.append(TAB + "@SuppressWarnings(\"unchecked\")\n");
-		sb.append(TAB + "public static <T> T create(Class<T> daoClass, SQLiteOpenHelper openHelper) {\n");
+		sb.append(TAB
+				+ "public static <T> T create(Class<T> daoClass, SQLiteOpenHelper openHelper) {\n");
 		for (Table table : tables) {
-//			DaoInfo dao = table.getDaoInfo();
-			sb.append(TAB2 + "if (daoClass == UserDao.class) {\n");
+			DaoInfo dao = table.getDaoInfo();
+			sb.append(TAB2 + "if (daoClass == " + dao.getDaoClass().className
+					+ ".class) {\n");
 			sb.append(TAB3 + "return (T) new " + table.getDaoClass().className
 					+ "(openHelper);\n");
 			sb.append(TAB2 + "}\n");

@@ -4,6 +4,7 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -95,7 +96,7 @@ public abstract class BaseDao<T> implements YoDao<T> {
 	 * @return
 	 */
 	public abstract ContentValues objectToValues(T row);
-	
+
 	/**
 	 * Get Create Database Table SQL as String
 	 */
@@ -152,7 +153,7 @@ public abstract class BaseDao<T> implements YoDao<T> {
 	public T findOneByFields(String selection, String[] selectionArgs,
 			String groupBy, String having, String orderBy) {
 		log("find one by fields: where %s, args %s, group by %s, having %s, order by %s",
-				selection, selectionArgs, groupBy, having, orderBy);
+				selection, Arrays.toString(selectionArgs), groupBy, having, orderBy);
 		SQLiteDatabase db = getDb(false);
 		Cursor cursor = db.query(mTableName, null, selection, selectionArgs,
 				groupBy, having, orderBy);
@@ -187,7 +188,7 @@ public abstract class BaseDao<T> implements YoDao<T> {
 	public List<T> findListByFields(String selection, String[] selectionArgs,
 			String groupBy, String having, String orderBy) {
 		log("find list by fields: where %s, args %s, group by %s, having %s, order by %s",
-				selection, selectionArgs, groupBy, having, orderBy);
+				selection, Arrays.toString(selectionArgs), groupBy, having, orderBy);
 		SQLiteDatabase db = getDb(false);
 		Cursor cursor = db.query(mTableName, null, selection, selectionArgs,
 				groupBy, having, orderBy);
@@ -258,11 +259,11 @@ public abstract class BaseDao<T> implements YoDao<T> {
 
 	@Override
 	public int deleteByFields(String selection, String[] selectionArgs) {
-		log("delete by fields: where %s, args %s", selection, selectionArgs);
+		log("delete by fields: where %s, args %s", selection, Arrays.toString(selectionArgs));
 		SQLiteDatabase db = getDb(true);
 		return db.delete(mTableName, selection, selectionArgs);
 	}
-	
+
 	@Override
 	public void debug() {
 		DEBUG = true;
@@ -288,7 +289,7 @@ public abstract class BaseDao<T> implements YoDao<T> {
 
 	@Override
 	public long countByFields(String selections, String[] selectionArgs) {
-		log("count by fields: where %s, args %s", selections, selectionArgs);
+		log("count by fields: where %s, args %s", selections, Arrays.toString(selectionArgs));
 		SQLiteDatabase db = getDb(false);
 		long count = db.query(mTableName, null, selections, selectionArgs,
 				null, null, null).getCount();
@@ -296,9 +297,11 @@ public abstract class BaseDao<T> implements YoDao<T> {
 	}
 
 	protected final void log(String format, Object... args) {
-		String msg = "[" + mTableName + "] " + format;
+		String msg = "[" + mTableName + "] ";
 		if (args.length > 1) {
-			msg = String.format(format, args);
+			msg += String.format(format, args);
+		} else {
+			msg += format;
 		}
 		if (DEBUG) {
 			Log.v(TAG, msg);
@@ -339,11 +342,11 @@ public abstract class BaseDao<T> implements YoDao<T> {
 		}
 		return list;
 	}
-	
+
 	public void setPrimaryKey(String pk) {
 		mPrimaryKey = pk;
 	}
-	
+
 	public String getPrimaryKey() {
 		return mPrimaryKey;
 	}
@@ -355,21 +358,25 @@ public abstract class BaseDao<T> implements YoDao<T> {
 	}
 
 	protected Date parseDatetime(String datetime) {
-		try {
-			return getDefaultDateFormat().parse(datetime);
-		} catch (ParseException e) {
-			e.printStackTrace();
+		if (datetime != null && datetime.length() > 0) {
+			try {
+				return getDefaultDateFormat().parse(datetime);
+			} catch (ParseException e) {
+				e.printStackTrace();
+			}
 		}
 		return null;
 	}
 
 	protected String formatDatetime(Date date) {
-		try {
-			return getDefaultDateFormat().format(date);
-		} catch (Exception e) {
-			e.printStackTrace();
+		if (date != null) {
+			try {
+				return getDefaultDateFormat().format(date);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 		}
-		return "";
+		return null;
 	}
 
 	protected static final String AGO_FULL_DATE_FORMATTER = "yyyy-MM-dd HH:mm:ss";
@@ -393,5 +400,5 @@ public abstract class BaseDao<T> implements YoDao<T> {
 		}
 		return df;
 	}
-	
+
 }

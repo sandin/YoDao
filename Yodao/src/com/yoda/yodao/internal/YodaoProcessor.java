@@ -271,8 +271,9 @@ public final class YodaoProcessor extends AbstractProcessor {
 	private String getTableName(Element element) {
 		String tableName = null;
 		Entity entity = element.getAnnotation(Entity.class);
-		if (entity != null) {
-			tableName = entity.name();
+		com.yoda.yodao.annotation.Table table = element.getAnnotation(com.yoda.yodao.annotation.Table.class);
+		if (table != null) {
+			tableName = table.name();
 		}
 		if (tableName == null || tableName.length() == 0) {
 			tableName = Utils.toLowerCase(element.getSimpleName().toString());
