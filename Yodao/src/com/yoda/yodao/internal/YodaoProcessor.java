@@ -26,7 +26,12 @@ import javax.tools.JavaFileObject;
 import com.yoda.yodao.annotation.Column;
 import com.yoda.yodao.annotation.Entity;
 import com.yoda.yodao.annotation.Id;
+import com.yoda.yodao.annotation.JoinColumn;
+import com.yoda.yodao.annotation.ManyToMany;
+import com.yoda.yodao.annotation.ManyToOne;
 import com.yoda.yodao.annotation.NotColumn;
+import com.yoda.yodao.annotation.OneToMany;
+import com.yoda.yodao.annotation.OneToOne;
 import com.yoda.yodao.annotation.Repository;
 
 /**
@@ -163,6 +168,8 @@ public final class YodaoProcessor extends AbstractProcessor {
 		return table;
 	}
 
+	/*---------------------------------------------------------------*/
+
 	/**
 	 * Parse a element to table's field
 	 * 
@@ -173,21 +180,74 @@ public final class YodaoProcessor extends AbstractProcessor {
 		Field field = null;
 		if (isTargetField(element)) {
 			Column column = element.getAnnotation(Column.class);
+			OneToOne oneToOne = element.getAnnotation(OneToOne.class);
+			OneToMany oneToMany = element.getAnnotation(OneToMany.class);
+			ManyToOne manyToOne = element.getAnnotation(ManyToOne.class);
+			ManyToMany manyToMany = element.getAnnotation(ManyToMany.class);
 
+			field = new Field();
 			String columnName = getColumnName(element);
 			String columnType = getColumnType(element);
-			field = new Field();
 			field.setFieldName(element.getSimpleName().toString());
 			field.setFieldType(columnType);
 			field.setColumnName(columnName);
 			field.setColumnType(columnType); // TODO: convert java type to
 												// database type
-			field.setNullable(column != null ? column.nullable() : true);
-			field.setIsId(isPKColumn(element));
-			log(TAG, "field: " + field);
+
+			if (oneToOne != null) {
+				parseOneToOne(element, field, oneToOne);
+			} else if (oneToMany != null) {
+				parseOneToMany(element, field, oneToMany);
+			} else if (manyToOne != null) {
+				parseManyToOne(element, field, manyToOne);
+			} else if (manyToMany != null) {
+				parseManyToMany(element, field, manyToMany);
+			} else {
+				parseColumn(element, field, column);
+			}
+
 		}
+		log(TAG, "field: " + field);
 		return field;
 	}
+
+	private void parseColumn(Element element, Field field, Column column) {
+		field.setNullable(column != null ? column.nullable() : true);
+		field.setIsId(isPKColumn(element));
+	}
+
+	private void parseOneToOne(Element element, Field field, OneToOne oneToOne) {
+		JoinColumn joinColumn = element.getAnnotation(JoinColumn.class);
+		String joinOn = null;
+		if (joinColumn != null) {
+			joinOn = joinColumn.name();
+		}
+		if (joinOn == null || joinOn.length() == 0) {
+			joinOn = field.getFieldName() + "_id";
+		}
+		// TODO:
+		error(element, "Cann't support OneToOne annotation yet.");
+	}
+
+	private void parseOneToMany(Element element, Field field,
+			OneToMany oneToMany) {
+		// TODO:
+		error(element, "Cann't support OneToMany annotation yet.");
+	}
+
+	private void parseManyToOne(Element element, Field field,
+			ManyToOne manyToOne) {
+		// TODO:
+		error(element, "Cann't support ManyToOne annotation yet.");
+	}
+
+	private void parseManyToMany(Element element, Field field,
+			ManyToMany manyToMany) {
+		// TODO:
+		error(element, "Cann't support ManyToMany annotation yet.");
+	}
+
+	/*---------------------------------------------------------------*/
 
 	private String getTableName(Element element) {
 		String tableName = null;

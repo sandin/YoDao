@@ -1,14 +1,21 @@
 package com.yoda.yodao.test.model;
 
+import java.util.List;
+
+import com.yoda.yodao.annotation.CascadeType;
 import com.yoda.yodao.annotation.Column;
 import com.yoda.yodao.annotation.Entity;
+import com.yoda.yodao.annotation.FetchType;
 import com.yoda.yodao.annotation.GeneratedValue;
 import com.yoda.yodao.annotation.GenerationType;
 import com.yoda.yodao.annotation.Id;
+import com.yoda.yodao.annotation.JoinColumn;
+import com.yoda.yodao.annotation.OneToMany;
+import com.yoda.yodao.annotation.OneToOne;
 import com.yoda.yodao.annotation.Table;
 
 @Entity
-@Table(name="user")
+@Table(name = "user")
 public class User {
 
 	@Id
@@ -26,7 +33,7 @@ public class User {
 	public User() {
 
 	}
-	
+
 	public long getId() {
 		return id;
 	}
@@ -34,8 +41,6 @@ public class User {
 	public void setId(long id) {
 		this.id = id;
 	}
-
-
 
 	public String getName() {
 		return name;
