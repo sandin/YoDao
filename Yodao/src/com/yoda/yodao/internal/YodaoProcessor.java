@@ -137,6 +137,9 @@ public final class YodaoProcessor extends AbstractProcessor {
 		} catch (IOException e) {
 			error(typeElement, "Unable to generate DAO for entity %s: %s",
 					typeElement, e.getMessage());
+		} catch (Throwable e) {
+			error(typeElement, "Unable to generate DAO for entity %s: %s",
+					typeElement, e.getMessage());
 		}
 	}
 
@@ -152,9 +155,11 @@ public final class YodaoProcessor extends AbstractProcessor {
 				writer.close();
 			}
 		} catch (IllegalStateException e) {
-			e.printStackTrace();
+			error("Unable to generate DaoFactory, %s", e.getMessage());
 		} catch (IOException e) {
-			e.printStackTrace();
+			error("Unable to generate DaoFactory, %s", e.getMessage());
+		} catch (Throwable e) {
+			error("Unable to generate DaoFactory, %s", e.getMessage());
 		}
 	}
 
@@ -271,7 +276,8 @@ public final class YodaoProcessor extends AbstractProcessor {
 	private String getTableName(Element element) {
 		String tableName = null;
 		Entity entity = element.getAnnotation(Entity.class);
-		com.yoda.yodao.annotation.Table table = element.getAnnotation(com.yoda.yodao.annotation.Table.class);
+		com.yoda.yodao.annotation.Table table = element
+				.getAnnotation(com.yoda.yodao.annotation.Table.class);
 		if (table != null) {
 			tableName = table.name();
 		}
@@ -371,5 +377,12 @@ public final class YodaoProcessor extends AbstractProcessor {
 			message = String.format(message, args);
 		}
 		processingEnv.getMessager().printMessage(ERROR, message, element);
+	}
+
+	private void error(String message, Object... args) {
+		if (args.length > 0) {
+			message = String.format(message, args);
+		}
+		processingEnv.getMessager().printMessage(ERROR, message);
 	}
 }

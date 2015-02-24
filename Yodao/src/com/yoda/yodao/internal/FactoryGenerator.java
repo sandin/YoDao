@@ -1,5 +1,6 @@
 package com.yoda.yodao.internal;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -20,17 +21,21 @@ public class FactoryGenerator {
 		if (tables == null || tables.size() == 0) {
 			return null;
 		}
-
-		Table firstTable = tables.get(0);
-		DaoInfo dao = firstTable.getDaoInfo();
+		// remove table which has no DAO maped
+		ArrayList<Table> localTables = new ArrayList<Table>();
+		for (Table table : tables) {
+			if (table.getDaoInfo() != null) {
+				localTables.add(table);
+			}
+		}
 
 		StringBuilder sb = new StringBuilder();
 		sb.append("package " + DAO_FACTORY_PACKAGE_NAME + ";\n");
 		sb.append("\n");
 		sb.append("import com.yoda.yodao.BaseDao;\n");
-		for (Table table : tables) {
-			DaoInfo tableDao = table.getDaoInfo();
-			sb.append("import " + tableDao.getDaoClass().getCanonicalName()
+		for (Table table : localTables) {
+			DaoInfo daoInfo = table.getDaoInfo();
+			sb.append("import " + daoInfo.getDaoClass().getCanonicalName()
 					+ ";\n");
 			sb.append("import " + table.getDaoClass().getCanonicalName()
 					+ ";\n");
@@ -48,9 +53,9 @@ public class FactoryGenerator {
 		sb.append("public final class " + DAO_FACTORY_CLASS_NAME + " {\n");
 		sb.append("\n");
 		genConstructor(sb);
-		genOnCreateTable(sb, tables);
-		genOnUpgradeTable(sb, tables);
-		genCreate(sb, tables);
+		genOnCreateTable(sb, localTables);
+		genOnUpgradeTable(sb, localTables);
+		genCreate(sb, localTables);
 		sb.append("\n");
 		sb.append("}\n");
 
