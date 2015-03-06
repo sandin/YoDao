@@ -18,8 +18,17 @@ import javax.annotation.processing.RoundEnvironment;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.TypeParameterElement;
+import javax.lang.model.type.ArrayType;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.ErrorType;
+import javax.lang.model.type.PrimitiveType;
+import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.TypeVariable;
 import javax.lang.model.util.Elements;
+import javax.lang.model.util.SimpleTypeVisitor6;
 import javax.lang.model.util.Types;
 import javax.tools.JavaFileObject;
 
@@ -116,7 +125,7 @@ public final class YodaoProcessor extends AbstractProcessor {
 				createSourceFile(filer, table);
 			}
 		}
-		createSourceFile(filer, tables); // for DAO factory
+//		createSourceFile(filer, tables); // for DAO factory
 		return true;
 	}
 
@@ -144,6 +153,10 @@ public final class YodaoProcessor extends AbstractProcessor {
 	}
 
 	private void createSourceFile(Filer filer, List<Table> tables) {
+		Element typeElement = null;
+		if (tables != null && tables.size() > 0) {
+			typeElement = tables.get(0).getElement();
+		}
 		try {
 			String javaContent = FactoryGenerator.generate(tables);
 			if (javaContent != null) {
@@ -155,11 +168,14 @@ public final class YodaoProcessor extends AbstractProcessor {
 				writer.close();
 			}
 		} catch (IllegalStateException e) {
-			error("Unable to generate DaoFactory, %s", e.getMessage());
+			error(typeElement, "Unable to generate DaoFactory, %s",
+					e.getMessage());
 		} catch (IOException e) {
-			error("Unable to generate DaoFactory, %s", e.getMessage());
+			error(typeElement, "Unable to generate DaoFactory, %s",
+					e.getMessage());
 		} catch (Throwable e) {
-			error("Unable to generate DaoFactory, %s", e.getMessage());
+			error(typeElement, "Unable to generate DaoFactory, %s",
+					e.getMessage());
 		}
 	}
 
@@ -173,14 +189,15 @@ public final class YodaoProcessor extends AbstractProcessor {
 		Table table = new Table();
 		table.setElement(element);
 
-		table.setTableName(Utils.toLowerCase(getTableName(element)));
+		table.setTableName(getTableName(element));
 		String className = getTableType(element);
 		table.setDaoClass(parseToDaoClazz(className));
 		table.setEntityClass(parseToEntityClazz(className));
 
 		List<Field> fields = new ArrayList<Field>();
 
-		List<? extends Element> elements = element.getEnclosedElements();
+		TypeElement te = (TypeElement) element;
+		List<? extends Element> elements = te.getEnclosedElements();
 		for (Element elem : elements) {
 			Field field = parseField(elem);
 			if (field != null) {
@@ -231,7 +248,7 @@ public final class YodaoProcessor extends AbstractProcessor {
 			}
 
 		}
-		log(TAG, "field: " + field);
+		// log(TAG, "field: " + field);
 		return field;
 	}
 
@@ -376,7 +393,11 @@ public final class YodaoProcessor extends AbstractProcessor {
 		if (args.length > 0) {
 			message = String.format(message, args);
 		}
-		processingEnv.getMessager().printMessage(ERROR, message, element);
+		if (element != null) {
+			processingEnv.getMessager().printMessage(ERROR, message, element);
+		} else {
+			processingEnv.getMessager().printMessage(ERROR, message);
+		}
 	}
 
 	private void error(String message, Object... args) {

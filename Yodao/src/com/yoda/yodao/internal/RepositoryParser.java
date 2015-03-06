@@ -124,6 +124,7 @@ public class RepositoryParser {
 	private static final String CREATE_PREFIX = "save";
 	private static final String UPDATE_PREFIX = "save";
 	private static final String DELETE_PREFIX = "delete";
+	private static final String COUNT_PREFIX = "count";
 
 	private static final String KEYWORD_BY = "By";
 	private static final String KEYWORD_AND = "And";
@@ -231,6 +232,9 @@ public class RepositoryParser {
 					}
 				}
 			}
+		}
+		if (query == null || query.getCrud() == null) {
+			throw new IllegalStateException("Cann't support method name: " + method.getMethodName());
 		}
 		return query;
 	}
@@ -345,6 +349,9 @@ public class RepositoryParser {
 		}
 		if (DELETE_PREFIX.equals(methodName)) {
 			return CRUD.DELETE;
+		}
+		if (COUNT_PREFIX.equals(methodName)) {
+			return CRUD.COUNT;
 		}
 		return null;
 	}

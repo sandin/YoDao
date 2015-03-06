@@ -6,7 +6,7 @@ import java.util.List;
 public class YoQuery {
 
 	public enum CRUD {
-		CREATE, READ, UPDATE, DELETE,
+		CREATE, READ, UPDATE, DELETE, COUNT
 	}
 
 	private CRUD crud;

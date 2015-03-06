@@ -192,7 +192,7 @@ public abstract class BaseDao<T> implements YoDao<T> {
 		SQLiteDatabase db = getDb(false);
 		Cursor cursor = db.query(mTableName, null, selection, selectionArgs,
 				groupBy, having, orderBy);
-		List<T> list = _cursorToList(cursor, null);
+		List<T> list = cursorToList(cursor, null);
 		cursor.close();
 		return list;
 	}
@@ -208,7 +208,7 @@ public abstract class BaseDao<T> implements YoDao<T> {
 		log("find list by sql: %s", sql);
 		SQLiteDatabase db = getDb(false);
 		Cursor cursor = db.rawQuery(sql, null);
-		List<T> list = _cursorToList(cursor, null);
+		List<T> list = cursorToList(cursor, null);
 		cursor.close();
 		return list;
 	}
@@ -332,7 +332,7 @@ public abstract class BaseDao<T> implements YoDao<T> {
 	 * @param cursor
 	 * @return
 	 */
-	public final List<T> _cursorToList(Cursor cursor, String[] columns) {
+	public final List<T> cursorToList(Cursor cursor, String[] columns) {
 		List<T> list = null;
 		if (cursor != null && cursor.getCount() > 0) {
 			list = new ArrayList<T>();

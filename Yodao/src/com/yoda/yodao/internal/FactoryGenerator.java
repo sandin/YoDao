@@ -7,7 +7,7 @@ import java.util.List;
 public class FactoryGenerator {
 
 	public static final String DAO_FACTORY_CLASS_NAME = "DaoFactory";
-	public static final String DAO_FACTORY_PACKAGE_NAME = "com.yoda.yodao";
+	public static String DAO_FACTORY_PACKAGE_NAME = "com.yoda.yodao";
 
 	private static final String TAB = "    ";
 	private static final String TAB2 = TAB + TAB;
@@ -26,6 +26,7 @@ public class FactoryGenerator {
 		for (Table table : tables) {
 			if (table.getDaoInfo() != null) {
 				localTables.add(table);
+				DAO_FACTORY_PACKAGE_NAME = table.getDaoInfo().getDaoClass().packageName + ".impl";
 			}
 		}
 
@@ -101,7 +102,7 @@ public class FactoryGenerator {
 	private static void genCreate(StringBuilder sb, List<Table> tables) {
 		// for empty constructor
 		sb.append(TAB + "@SuppressWarnings(\"unchecked\")\n");
-		sb.append(TAB + "public static <T> T create(Class<T> daoClass) {\n");
+		sb.append(TAB + "private static <T> T create(Class<T> daoClass) {\n");
 		for (Table table : tables) {
 			DaoInfo dao = table.getDaoInfo();
 			sb.append(TAB2 + "if (daoClass == " + dao.getDaoClass().className

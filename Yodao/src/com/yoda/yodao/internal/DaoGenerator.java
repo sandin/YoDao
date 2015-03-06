@@ -11,6 +11,7 @@ import com.yoda.yodao.internal.query.YoGroupBy;
 import com.yoda.yodao.internal.query.YoOrderBy;
 import com.yoda.yodao.internal.query.YoOrderBy.Order;
 import com.yoda.yodao.internal.query.YoQuery;
+import com.yoda.yodao.internal.query.YoQuery.CRUD;
 import com.yoda.yodao.internal.query.YoSelection;
 
 public class DaoGenerator {
@@ -145,6 +146,12 @@ public class DaoGenerator {
 	}
 
 	private void genMethod(StringBuilder sb, DaoMethod method) {
+		YoQuery query = method.getQuery();
+		CRUD crud = query.getCrud();
+		if (query == null || crud == null) {
+			return;
+		}
+
 		DaoParam[] params = method.getMethodParams();
 		sb.append(TAB + "public " + method.getReturnType() + " "
 				+ method.getMethodName() + "(");
@@ -159,7 +166,6 @@ public class DaoGenerator {
 		}
 		sb.append(") {\n");
 
-		YoQuery query = method.getQuery();
 
 		// Selections
 		String selection = "null";
@@ -217,7 +223,7 @@ public class DaoGenerator {
 
 		// MethodName
 		String methodName = null;
-		switch (query.getCrud()) {
+		switch (crud) {
 		case READ:
 			String returnType = method.getReturnType();
 			boolean isList = Utils.isListType(returnType);
@@ -235,6 +241,13 @@ public class DaoGenerator {
 							"return %s(/* where */%s, /* args */ %s);\n",
 							methodName, selection, selectionArgs));
 			break;
+		case COUNT:
+			methodName = "countByFields";
+			sb.append(TAB2
+					+ String.format(
+							"return %s(/* where */%s, /* args */ %s);\n",
+							methodName, selection, selectionArgs));
+			break;
 		case UPDATE:
 			methodName = "save";
 			// TODO: update methods
@@ -243,6 +256,7 @@ public class DaoGenerator {
 			methodName = "save";
 			// TODO: create methods 
 			break;
+			
 		default:
 			break;
 		}

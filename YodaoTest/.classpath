@@ -9,5 +9,10 @@
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="lib" path="libs/yodao.jar"/>
 	<classpathentry kind="lib" path="libs/android.jar"/>
+	<classpathentry kind="src" path="src_gen">
+		<attributes>
+			<attribute name="optional" value="true"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
