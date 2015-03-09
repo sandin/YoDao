@@ -1,7 +1,9 @@
 package com.yoda.yodao;
 
+import java.io.Serializable;
 import java.util.List;
 
+import android.content.ContentValues;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
@@ -15,7 +17,7 @@ import android.database.sqlite.SQLiteOpenHelper;
  * @param <ID>
  *            PK
  */
-public interface YoDao<T> {
+public interface YoDao<T, ID extends Serializable> {
 	
 	public static final String TAG = YoDao.class.getSimpleName();
 
@@ -26,7 +28,7 @@ public interface YoDao<T> {
 	 * @param entity
 	 * @return the saved entity
 	 */
-	T save(T entity);
+	boolean save(T entity);
 
 	/**
 	 * Saves all given entities.
@@ -34,7 +36,38 @@ public interface YoDao<T> {
 	 * @param entities
 	 * @return
 	 */
-	List<T> save(List<T> entities);
+	boolean save(List<T> entities);
+	
+	/**
+     * update a row by primary key
+     * 
+     * @param id
+     * @param values
+     * @return
+     */
+	int update(T entity);
+	
+	/**
+	 * update by fields
+	 * 
+	 * @param entity
+	 * @param whereClause
+	 * @param whereArgs
+	 * @return
+	 */
+	int updateByFields(T entity, String whereClause,
+            String[] whereArgs);
+
+	/**
+	 * update some fields
+	 * 
+	 * @param values
+	 * @param whereClause
+	 * @param whereArgs
+	 * @return
+	 */
+	int updateByFields(ContentValues values, String whereClause,
+            String[] whereArgs);
 
 	/**
 	 * Retrives an entity by its primary key.
@@ -45,7 +78,7 @@ public interface YoDao<T> {
 	 * @throws IllegalArgumentException
 	 *             if primaryKey is {@code null}
 	 */
-	T findOne(long id);
+	T findOne(ID id);
 
 	/**
 	 * Retrives an entity by its fields
@@ -76,7 +109,9 @@ public interface YoDao<T> {
 	 * @param sql
 	 * @return
 	 */
-	T findOneBySql(String sql);
+	T findOneBySql(String sql, String[] selectionArgs);
+
+	
 
 	/**
 	 * Returns whether an entity with the given id exists.
@@ -86,7 +121,7 @@ public interface YoDao<T> {
 	 * @throws IllegalArgumentException
 	 *             if primaryKey is {@code null}
 	 */
-	boolean exists(long id);
+	boolean exists(ID id);
 
 	/**
 	 * Returns all instances of the type.
@@ -125,7 +160,7 @@ public interface YoDao<T> {
 	 * @param sql
 	 * @return
 	 */
-	List<T> findListBySql(String sql);
+	List<T> findListBySql(String sql, String[] selectionArgs);
 
 	/**
 	 * Returns the number of entities available.
@@ -148,7 +183,7 @@ public interface YoDao<T> {
 	 * 
 	 * @param id
 	 */
-	int delete(long id);
+	int delete(ID id);
 
 	/**
 	 * Deletes a given entity.

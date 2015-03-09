@@ -12,6 +12,8 @@ public class DaoMethod {
 
 	private String returnType;
 
+	private String sql;
+
 	private YoQuery query;
 
 	public String getMethodName() {
@@ -50,11 +52,19 @@ public class DaoMethod {
 		this.query = query;
 	}
 
+	public String getSql() {
+		return sql;
+	}
+
+	public void setSql(String sql) {
+		this.sql = sql;
+	}
+
 	@Override
 	public String toString() {
 		return "DaoMethod [methodName=" + methodName + ", methodParams="
 				+ Arrays.toString(methodParams) + ", returnType=" + returnType
-				+ ", query=" + query + "]";
+				+ ", sql=" + sql + ", query=" + query + "]";
 	}
 
 }

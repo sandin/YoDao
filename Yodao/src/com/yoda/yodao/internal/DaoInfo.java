@@ -10,6 +10,8 @@ public class DaoInfo {
 
 	private Clazz daoClass;
 
+	private String pkClass;
+
 	private List<DaoMethod> methods;
 
 	private boolean isInterface;
@@ -46,10 +48,19 @@ public class DaoInfo {
 		this.isInterface = isInterface;
 	}
 
+	public String getPkClass() {
+		return pkClass;
+	}
+
+	public void setPkClass(String pkClass) {
+		this.pkClass = pkClass;
+	}
+
 	@Override
 	public String toString() {
 		return "DaoInfo [entityClass=" + entityClass + ", daoClass=" + daoClass
-				+ ", methods=" + methods + ", isInterface=" + isInterface + "]";
+				+ ", pkClass=" + pkClass + ", methods=" + methods
+				+ ", isInterface=" + isInterface + "]";
 	}
 
 }

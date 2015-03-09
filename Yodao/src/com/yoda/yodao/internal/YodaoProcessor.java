@@ -18,22 +18,15 @@ import javax.annotation.processing.RoundEnvironment;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.TypeParameterElement;
-import javax.lang.model.type.ArrayType;
-import javax.lang.model.type.DeclaredType;
-import javax.lang.model.type.ErrorType;
-import javax.lang.model.type.PrimitiveType;
-import javax.lang.model.type.TypeMirror;
-import javax.lang.model.type.TypeVariable;
 import javax.lang.model.util.Elements;
-import javax.lang.model.util.SimpleTypeVisitor6;
 import javax.lang.model.util.Types;
 import javax.tools.JavaFileObject;
 
 import com.yoda.yodao.annotation.Column;
 import com.yoda.yodao.annotation.Entity;
+import com.yoda.yodao.annotation.GeneratedValue;
+import com.yoda.yodao.annotation.GenerationType;
 import com.yoda.yodao.annotation.Id;
 import com.yoda.yodao.annotation.JoinColumn;
 import com.yoda.yodao.annotation.ManyToMany;
@@ -146,10 +139,13 @@ public final class YodaoProcessor extends AbstractProcessor {
 		} catch (IOException e) {
 			error(typeElement, "Unable to generate DAO for entity %s: %s",
 					typeElement, e.getMessage());
-		} catch (Throwable e) {
+		}
+		/*
+		catch (Throwable e) {
 			error(typeElement, "Unable to generate DAO for entity %s: %s",
 					typeElement, e.getMessage());
 		}
+		*/
 	}
 
 	private void createSourceFile(Filer filer, List<Table> tables) {
@@ -255,6 +251,7 @@ public final class YodaoProcessor extends AbstractProcessor {
 	private void parseColumn(Element element, Field field, Column column) {
 		field.setNullable(column != null ? column.nullable() : true);
 		field.setIsId(isPKColumn(element));
+		field.setIdGenerator(getIdGenerator(element));
 	}
 
 	private void parseOneToOne(Element element, Field field, OneToOne oneToOne) {
@@ -331,6 +328,19 @@ public final class YodaoProcessor extends AbstractProcessor {
 																				// name
 		}
 		return columnName;
+	}
+
+	private Field.IdGenerator getIdGenerator(Element element) {
+		GeneratedValue gv = element.getAnnotation(GeneratedValue.class);
+		if (gv != null) {
+			GenerationType gt = gv.strategy();
+			if (gt == GenerationType.UUID) {
+				return Field.IdGenerator.UUID;
+			} else {
+				return Field.IdGenerator.AUTO;
+			}
+		}
+		return null;
 	}
 
 	private boolean isPKColumn(Element element) {

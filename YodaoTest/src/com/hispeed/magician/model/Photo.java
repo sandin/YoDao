@@ -22,12 +22,12 @@ import com.yoda.yodao.annotation.Table;
 @Table(name = "pho_photo")
 public class Photo implements Serializable {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(name = "id")
     private long id;
 
     /** uuid */
-    @Column(name = "uuid")
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
     private String uuid;
 
     /** 发型uuid */

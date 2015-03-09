@@ -8,6 +8,10 @@ package com.yoda.yodao.internal;
  */
 public class Field {
 
+	public enum IdGenerator {
+		AUTO, UUID
+	}
+
 	/**
 	 * Java field Name
 	 */
@@ -37,6 +41,8 @@ public class Field {
 	 * IS PK
 	 */
 	private boolean isId = false;
+
+	private IdGenerator idGenerator = IdGenerator.AUTO;
 
 	public Field() {
 
@@ -104,11 +110,20 @@ public class Field {
 		this.nullable = nullable;
 	}
 
+	public IdGenerator getIdGenerator() {
+		return idGenerator;
+	}
+
+	public void setIdGenerator(IdGenerator idGenerator) {
+		this.idGenerator = idGenerator;
+	}
+
 	@Override
 	public String toString() {
 		return "Field [fieldName=" + fieldName + ", fieldType=" + fieldType
 				+ ", columnName=" + columnName + ", columnType=" + columnType
-				+ ", nullable=" + nullable + ", isId=" + isId + "]";
+				+ ", nullable=" + nullable + ", isId=" + isId
+				+ ", idGenerator=" + idGenerator + "]";
 	}
 
 }

@@ -6,7 +6,7 @@ import java.util.List;
 public class YoQuery {
 
 	public enum CRUD {
-		CREATE, READ, UPDATE, DELETE, COUNT
+		CREATE, READ, UPDATE, DELETE, COUNT, RAW_SQL
 	}
 
 	private CRUD crud;
@@ -14,6 +14,8 @@ public class YoQuery {
 	private String name;
 
 	private String entity;
+
+	private String sql;
 
 	private List<YoSelection> selections = new ArrayList<YoSelection>();
 	private List<YoGroupBy> groupBys = new ArrayList<YoGroupBy>();
@@ -96,12 +98,20 @@ public class YoQuery {
 		this.orderBys = orderBys;
 	}
 
+	public String getSql() {
+		return sql;
+	}
+
+	public void setSql(String sql) {
+		this.sql = sql;
+	}
+
 	@Override
 	public String toString() {
 		return "YoQuery [crud=" + crud + ", name=" + name + ", entity="
-				+ entity + ", selections=" + selections + ", groupBys="
-				+ groupBys + ", havings=" + havings + ", orderBys=" + orderBys
-				+ "]";
+				+ entity + ", sql=" + sql + ", selections=" + selections
+				+ ", groupBys=" + groupBys + ", havings=" + havings
+				+ ", orderBys=" + orderBys + "]";
 	}
 
 }

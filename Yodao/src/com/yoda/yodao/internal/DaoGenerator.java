@@ -21,16 +21,24 @@ public class DaoGenerator {
 
 	public static final String FORMAT_GET_PK = //
 	TAB + "@Override\n" //
-			+ TAB + "public long getPK(::T:: entity) {\n" //
+			+ TAB + "public ::PKType:: getPK(::T:: entity) {\n" //
 			+ TAB2 + "return entity.get::PK::();\n" //
 			+ TAB + "}\n" //
 			+ TAB + "\n";
 
 	public static final String FORMAT_SET_PK = //
 	TAB + "@Override\n" //
-			+ TAB + "public ::T:: setPK(::T:: entity, long id) {\n" //
-			+ TAB2 + "entity.set::PK::(id);\n" //
-			+ TAB2 + "return entity;\n" //
+			+ TAB + "public ::T:: setPK(::T:: entity, ::PKType:: id) {\n" //
+			+ TAB2 + "if (id != null) {\n" //
+			+ TAB3 + "entity.set::PK::(id);\n" //
+			+ TAB2 + "}\n" + TAB2 + "return entity;\n" //
+			+ TAB + "}\n" //
+			+ TAB + "\n";
+
+	public static final String FORMAT_GET_PK_CLASS = //
+	TAB + "@Override\n" //
+			+ TAB + "public Class<?> getPKClass() {\n" //
+			+ TAB2 + "return ::PKType::;\n" //
 			+ TAB + "}\n" //
 			+ TAB + "\n";
 
@@ -91,6 +99,7 @@ public class DaoGenerator {
 		}
 
 		DaoInfo dao = table.getDaoInfo();
+		String pkClassName = dao.getPkClass();
 
 		StringBuilder sb = new StringBuilder();
 		sb.append("package " + table.getDaoClass().packageName + ";\n");
@@ -112,7 +121,8 @@ public class DaoGenerator {
 		if (dao.isInterface()) {
 			sb.append("public class " + table.getDaoClass().className
 					+ " extends BaseDao<" + table.getEntityClass().className
-					+ "> implements " + dao.getDaoClass().className + " {\n");
+					+ ", " + pkClassName + "> implements "
+					+ dao.getDaoClass().className + " {\n");
 		} else {
 			sb.append("public class " + table.getDaoClass().className
 					+ " extends " + dao.getDaoClass().className + " {\n");
@@ -124,6 +134,7 @@ public class DaoGenerator {
 		genObjectToValues(sb, table);
 		genGetPK(sb, table);
 		genSetPK(sb, table);
+		genGetPKClass(sb, table);
 		genGetTableName(sb, table);
 		genGetCreateTableSql(sb, table);
 		genOnCreateTable(sb, table);
@@ -153,6 +164,7 @@ public class DaoGenerator {
 		}
 
 		DaoParam[] params = method.getMethodParams();
+		sb.append(TAB + "@Override\n");
 		sb.append(TAB + "public " + method.getReturnType() + " "
 				+ method.getMethodName() + "(");
 		if (params != null) {
@@ -166,6 +178,10 @@ public class DaoGenerator {
 		}
 		sb.append(") {\n");
 
+		int argsOffset = 0;
+		if (crud == CRUD.UPDATE) {
+			argsOffset = 1;
+		}
 
 		// Selections
 		String selection = "null";
@@ -181,7 +197,8 @@ public class DaoGenerator {
 					selection += where.isOr() ? " OR " : " AND ";
 				}
 				selection += Utils.toLowerCase(where.getField()) + " = ? ";
-				args += "String.valueOf(arg" + where.getArg() + "), ";
+				int argIndex = Integer.parseInt(where.getArg()) + argsOffset;
+				args += "String.valueOf(arg" + argIndex + "), ";
 			}
 			selectionArgs = "new String[] { " + args + " }";
 			selection = "\"" + selection + "\"";
@@ -221,12 +238,13 @@ public class DaoGenerator {
 			orderBy = "\"" + orderBy + "\"";
 		}
 
+		String returnType = method.getReturnType();
+		boolean isList = Utils.isListType(returnType);
+
 		// MethodName
 		String methodName = null;
 		switch (crud) {
 		case READ:
-			String returnType = method.getReturnType();
-			boolean isList = Utils.isListType(returnType);
 			methodName = isList ? "findListByFields" : "findOneByFields";
 			sb.append(TAB2
 					+ String.format(
@@ -249,20 +267,63 @@ public class DaoGenerator {
 							methodName, selection, selectionArgs));
 			break;
 		case UPDATE:
-			methodName = "save";
-			// TODO: update methods
+			methodName = "updateByFields";
+			sb.append(TAB2
+					+ String.format(
+							"return %s(%s, /* where */%s, /* args */ %s);\n",
+							methodName, "arg0", selection, selectionArgs));
 			break;
 		case CREATE:
 			methodName = "save";
-			// TODO: create methods 
+			// TODO: create methods
 			break;
-			
+		case RAW_SQL:
+			String sql = query.getSql();
+			methodName = null;
+			if (isList) {
+				methodName = "findListBySql";
+			} else if (Long.class.getCanonicalName().equals(returnType)) {
+				methodName = "findLongColBySql";
+			} else if (long.class.getCanonicalName().equals(returnType)) {
+				methodName = "findLongColBySql";
+			} else if (Integer.class.getCanonicalName().equals(returnType)) {
+				methodName = "findIntColBySql";
+			} else if (int.class.getCanonicalName().equals(returnType)) {
+				methodName = "findIntColBySql";
+			} else if (String.class.getCanonicalName().equals(returnType)) {
+				methodName = "findStringColBySql";
+			} else {
+				methodName = "findOneBySql";
+			}
+
+			selectionArgs = getSelectionArgs(params);
+			sb.append(TAB2
+					+ String.format("return %s(/* sql */%s, /* args */ %s);\n",
+							methodName, quote(sql), selectionArgs));
+			break;
 		default:
 			break;
 		}
 
 		sb.append(TAB + "}\n");
 		sb.append("\n");
+	}
+
+	private static String getSelectionArgs(DaoParam[] params) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("new String[] {");
+		if (params != null) {
+			for (int i = 0; i < params.length; i++) {
+				DaoParam p = params[i];
+				sb.append("String.valueOf(arg" + i + "), ");
+			}
+		}
+		sb.append("}");
+		return sb.toString();
+	}
+
+	public static String quote(String text) {
+		return "\"" + text + "\"";
 	}
 
 	// STATIC FIELDS
@@ -467,22 +528,40 @@ public class DaoGenerator {
 		List<Field> fields = table.getFields();
 		if (fields != null) {
 			for (Field field : fields) {
-				if (field.isId()) { // don't save PK into DB
-					continue;
-				}
 				String javaType = field.getFieldType();
 				String columnName = getColumnName(field);
 				String getter = field.getGetterMethodName();
-				if (javaType.equals(Date.class.getName())) {
-					// Handle DateTime type
-					sb.append(TAB2
-							+ String.format(
-									"v.put(%s, formatDatetime(obj.%s()));\n",
-									columnName, getter));
+				String setter = field.getSetterMethodName();
+
+				if (field.isId()) {
+					if (field.getIdGenerator() == Field.IdGenerator.AUTO) {
+						// don't save PK into DB
+					}
+					if (field.getIdGenerator() == Field.IdGenerator.UUID) {
+						sb.append(TAB2
+								+ String.format("String uuid = obj.%s();\n",
+										getter));
+						sb.append(TAB2 + "if (uuid == null) {\n");
+						sb.append(TAB3 + "uuid = generateUUID();\n");
+						sb.append(TAB3
+								+ String.format("obj.%s(uuid);\n", setter));
+						sb.append(TAB2 + "}\n");
+						sb.append(TAB2
+								+ String.format("v.put(%s, uuid);\n",
+										columnName));
+					}
 				} else {
-					sb.append(TAB2
-							+ String.format("v.put(%s, obj.%s());\n",
-									columnName, getter));
+					if (javaType.equals(Date.class.getName())) {
+						// Handle DateTime type
+						sb.append(TAB2
+								+ String.format(
+										"v.put(%s, formatDatetime(obj.%s()));\n",
+										columnName, getter));
+					} else {
+						sb.append(TAB2
+								+ String.format("v.put(%s, obj.%s());\n",
+										columnName, getter));
+					}
 				}
 			}
 		}
@@ -491,18 +570,29 @@ public class DaoGenerator {
 
 	// getPK
 	private void genGetPK(StringBuilder sb, Table table) {
+		DaoInfo dao = table.getDaoInfo();
 		Map<String, Object> args = new HashMap<String, Object>();
 		args.put("T", table.getEntityClass().className);
 		args.put("PK", Utils.upperCaseFirstLetter(getPKFieldName(table)));
+		args.put("PKType", dao.getPkClass());
 		sb.append(format(FORMAT_GET_PK, args));
 	}
 
 	// setPK
 	private void genSetPK(StringBuilder sb, Table table) {
+		DaoInfo dao = table.getDaoInfo();
 		Map<String, Object> args = new HashMap<String, Object>();
 		args.put("T", table.getEntityClass().className);
 		args.put("PK", Utils.upperCaseFirstLetter(getPKFieldName(table)));
+		args.put("PKType", dao.getPkClass());
 		sb.append(format(FORMAT_SET_PK, args));
+	}
+
+	// getPKClass
+	private void genGetPKClass(StringBuilder sb, Table table) {
+		Map<String, Object> args = new HashMap<String, Object>();
+		args.put("PKType", getPKFieldType(table) + ".class");
+		sb.append(format(FORMAT_GET_PK_CLASS, args));
 	}
 
 	// getTableName
@@ -548,6 +638,14 @@ public class DaoGenerator {
 			id = pk.getColumnName();
 		}
 		return id;
+	}
+
+	private static String getPKFieldType(Table table) {
+		Field pk = table.getPKField();
+		if (pk != null) {
+			return pk.getFieldType();
+		}
+		return null;
 	}
 
 	public static void main(String[] args) {

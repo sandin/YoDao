@@ -7,7 +7,7 @@ import com.yoda.yodao.BaseDao;
 import com.yoda.yodao.annotation.Repository;
 
 @Repository
-public abstract class HairDao extends BaseDao<Hair> {
+public abstract class HairDao extends BaseDao<Hair, Long> {
 
 	public HairDao(SQLiteOpenHelper openHelper) {
 		super(openHelper);

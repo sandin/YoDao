@@ -108,8 +108,8 @@ public class Utils {
 		return (PackageElement) type;
 	}
 
-	public static TypeMirror getGenericType(final TypeMirror type) {
-		final TypeMirror[] result = { null };
+	public static TypeMirror getGenericType(final TypeMirror type, int index) {
+		final TypeMirror[] result = { null, null };
 
 		type.accept(new SimpleTypeVisitor6<Void, Void>() {
 			
@@ -119,6 +119,9 @@ public class Utils {
 						.getTypeArguments();
 				if (!typeArguments.isEmpty()) {
 					result[0] = typeArguments.get(0);
+					if (typeArguments.size() > 1) {
+						result[1] = typeArguments.get(1);
+					}
 				}
 				return null;
 			}
@@ -149,7 +152,10 @@ public class Utils {
 			}
 		}, null);
 
-		return result[0];
+		if (index < result.length) {
+			return result[index];
+		}
+		return null;
 	}
 	
 	public static Clazz parseClassNameToClazz(String clazzName) {

@@ -36,6 +36,7 @@ public class RepositoryParser {
 		boolean isInterface = element.getKind().isInterface();
 		daoInfo.setIsInterface(isInterface);
 		TypeMirror genericType = null;
+		TypeMirror pkType = null;
 		if (isInterface) {
 			List<? extends TypeMirror> interfaces = ((TypeElement) element)
 					.getInterfaces();
@@ -43,12 +44,13 @@ public class RepositoryParser {
 				throw new IllegalStateException(elementName
 						+ " must to be a interface.");
 			}
-			genericType = Utils.getGenericType(interfaces.get(0));
+			genericType = Utils.getGenericType(interfaces.get(0), 0);
+			pkType = Utils.getGenericType(interfaces.get(0), 1);
 		} else {
 			TypeMirror superclass = ((TypeElement) element).getSuperclass();
-			Utils.getGenericType(superclass);
+			genericType = Utils.getGenericType(superclass, 0);
+			pkType = Utils.getGenericType(superclass, 1);
 			Set<Modifier> modifiers = ((TypeElement) element).getModifiers();
-			genericType = Utils.getGenericType(superclass);
 			if (modifiers.contains(Modifier.ABSTRACT)) {
 
 			}
@@ -57,9 +59,15 @@ public class RepositoryParser {
 			throw new IllegalStateException(elementName
 					+ " must has a generic type which it's the entity class");
 		}
+		if (pkType == null) {
+			throw new IllegalStateException(
+					elementName
+							+ " must has a generic type which it's the entity's PK class");
+		}
 		String className = genericType.toString();
 		Clazz entityClass = Utils.parseClassNameToClazz(className);
 		daoInfo.setEntityClass(entityClass);
+		daoInfo.setPkClass(pkType.toString());
 
 		List<DaoMethod> methods = parserMethods(element);
 		if (methods != null) {
@@ -95,6 +103,11 @@ public class RepositoryParser {
 					String returnType = executableElement.getReturnType()
 							.toString();
 					method.setReturnType(returnType);
+					com.yoda.yodao.annotation.Query query = executableElement
+							.getAnnotation(com.yoda.yodao.annotation.Query.class);
+					if (query != null) {
+						method.setSql(query.value());
+					}
 
 					List<? extends VariableElement> parameters = executableElement
 							.getParameters();
@@ -122,7 +135,7 @@ public class RepositoryParser {
 	private static final String READ_ONE_PREFIX = "findOne";
 	private static final String READ_LIST_PREFIX = "findList";
 	private static final String CREATE_PREFIX = "save";
-	private static final String UPDATE_PREFIX = "save";
+	private static final String UPDATE_PREFIX = "update";
 	private static final String DELETE_PREFIX = "delete";
 	private static final String COUNT_PREFIX = "count";
 
@@ -219,22 +232,30 @@ public class RepositoryParser {
 			query = new YoQuery();
 			String methodName = method.getMethodName();
 			query.setName(methodName);
-			List<String> keywords = splitByKeyword(methodName);
-			if (keywords.size() > 0) {
-				int argIndex = 0;
-				for (int i = 0; i < keywords.size(); i++) {
-					String word = keywords.get(i);
-					if (i == 0) {
-						CRUD crud = handleCrud(word);
-						query.setCrud(crud);
-					} else {
-						argIndex = handleKeyword(query, word, argIndex);
+
+			String sql = method.getSql();
+			if (sql != null) {
+				query.setCrud(CRUD.RAW_SQL);
+				query.setSql(sql);
+			} else {
+				List<String> keywords = splitByKeyword(methodName);
+				if (keywords.size() > 0) {
+					int argIndex = 0;
+					for (int i = 0; i < keywords.size(); i++) {
+						String word = keywords.get(i);
+						if (i == 0) {
+							CRUD crud = handleCrud(word);
+							query.setCrud(crud);
+						} else {
+							argIndex = handleKeyword(query, word, argIndex);
+						}
 					}
 				}
 			}
 		}
 		if (query == null || query.getCrud() == null) {
-			throw new IllegalStateException("Cann't support method name: " + method.getMethodName());
+			throw new IllegalStateException("Cann't support method name: "
+					+ method.getMethodName());
 		}
 		return query;
 	}
