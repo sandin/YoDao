@@ -1,0 +1,4 @@
+include ':yodao'
+include ':yodao-compiler'
+include ':yodao-annotations'
+include ':yodao-examples'
