@@ -2,16 +2,20 @@
 subprojects {
 
   repositories {
-    mavenCentral()
+      mavenCentral()
+      jcenter()
   }
 
   buildscript {
       repositories {
+          mavenCentral()
           jcenter()
       }
       dependencies {
           classpath 'com.android.tools.build:gradle:2.0.0'
           classpath 'com.neenbedankt.gradle.plugins:android-apt:1.8'
+          classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.4'
+          classpath 'com.github.dcendents:android-maven-gradle-plugin:1.3'
       }
   }
 
@@ -24,6 +28,30 @@ ext {
   buildToolsVersion = '23.0.1'
   sourceCompatibilityVersion = JavaVersion.VERSION_1_7
   targetCompatibilityVersion = JavaVersion.VERSION_1_7
+
+    bintrayRepo = 'maven'////bintray上的仓库名，一般为maven
+    bintrayName = 'YoDao'//bintray上的项目名
+
+    publishedGroupId = 'com.lds'//JCenter的GroupId
+    artifact = 'yodao'//JCenter的ArtifactId
+
+    siteUrl = 'https://github.com/sandin/YoDao'
+    gitUrl = 'https://github.com/sandin/YoDao'
+
+    libraryVersion = '0.2.1'//版本号
+    libraryName = 'yodao'//项目名字，没什么用
+    libraryDescription = 'YoDao Is A Simple and Fast ORM library for android.'//项目描述，没什么用
+
+    //开发者信息
+    developerId = 'sandin'
+    developerName = 'San Lau'
+    developerEmail = 'lds2012@gmail.com'
+
+    //以上所有信息自行修改，以下不变
+
+    licenseName = 'The Apache Software License, Version 2.0'
+    licenseUrl = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+    allLicenses = ["Apache-2.0"]
 }
 
 ext.deps = [
@@ -46,3 +74,5 @@ ext.deps = [
     autoservice: 'com.google.auto.service:auto-service:1.0-rc2',
     autocommon: 'com.google.auto:auto-common:0.4'
 ]
+
+

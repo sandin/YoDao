@@ -19,6 +19,7 @@ import javax.annotation.processing.RoundEnvironment;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
@@ -98,11 +99,13 @@ public final class YodaoProcessor extends AbstractProcessor {
 			try {
 				DaoInfo dao = RepositoryParser.parser(element);
 				daos.add(dao);
-				log(TAG, "dao: " + dao);
 			} catch (ProcessException e) {
 				error(e.getElement(), e.getMessage());
 				continue;
-			}
+			} catch (Throwable e) {
+                error(element, e.getMessage());
+                continue;
+            }
 		}
 
         // 将Dao和entity关联起来
@@ -127,7 +130,11 @@ public final class YodaoProcessor extends AbstractProcessor {
 					createSourceFile(filer, table);
 				} catch (ProcessException e) {
                     error(e.getElement(), e.getMessage());
-				}
+                    continue;
+                } catch (Throwable e) {
+                    error(table.getElement(), e.getMessage());
+                    continue;
+                }
 			}
 		}
 //		createSourceFile(filer, tables); // for DAO factory
@@ -213,7 +220,7 @@ public final class YodaoProcessor extends AbstractProcessor {
 			}
 		}
 		table.setFields(fields);
-		log(TAG, "table: " + table);
+		log(TAG, "Found table: " + table.getTableName());
 		return table;
 	}
 
@@ -394,7 +401,8 @@ public final class YodaoProcessor extends AbstractProcessor {
 
 	private boolean isTargetField(Element element) {
 		return element != null && element.getKind() == ElementKind.FIELD //
-				&& element.getAnnotation(NotColumn.class) == null;
+				&& element.getAnnotation(NotColumn.class) == null
+                && !element.getModifiers().contains(Modifier.STATIC);
 	}
 
 	public void log(String tag, String msg) {
