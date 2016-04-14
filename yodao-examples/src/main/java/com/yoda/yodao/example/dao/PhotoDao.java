@@ -14,13 +14,6 @@ public interface PhotoDao extends YoDao<Photo, String> {
 
 	List<Photo> findListByModelingUUId(String mid);
 
-	/**
-	 * 根据版本值不为0判断是否已同步（云存储 num使用）
-	 * 
-	 * @param ver
-	 *            版本值
-	 * @return
-	 */
 	long countByOpStatus(int opStatus);
 	
 	int updateByViewType(Photo entity, int type);

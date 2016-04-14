@@ -1,5 +1,7 @@
 package com.yoda.yodao.internal;
 
+import javax.lang.model.element.Element;
+
 /**
  * field of table
  * 
@@ -43,6 +45,8 @@ public class Field {
 	private boolean isId = false;
 
 	private IdGenerator idGenerator = IdGenerator.AUTO;
+
+	private Element element;
 
 	public Field() {
 
@@ -118,7 +122,15 @@ public class Field {
 		this.idGenerator = idGenerator;
 	}
 
-	@Override
+    public Element getElement() {
+        return element;
+    }
+
+    public void setElement(Element element) {
+        this.element = element;
+    }
+
+    @Override
 	public String toString() {
 		return "Field [fieldName=" + fieldName + ", fieldType=" + fieldType
 				+ ", columnName=" + columnName + ", columnType=" + columnType

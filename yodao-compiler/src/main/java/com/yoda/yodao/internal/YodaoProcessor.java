@@ -82,6 +82,8 @@ public final class YodaoProcessor extends AbstractProcessor {
 	@Override
 	public boolean process(Set<? extends TypeElement> elements,
 			RoundEnvironment env) {
+
+        // 找到并解析所有的Entity类
 		List<Table> tables = new ArrayList<Table>();
 		for (Element element : env.getElementsAnnotatedWith(Entity.class)) {
 			Table table = parseTable(element);
@@ -90,18 +92,20 @@ public final class YodaoProcessor extends AbstractProcessor {
 			}
 		}
 
+        // 找到并解析所有的Repository类
 		List<DaoInfo> daos = new ArrayList<DaoInfo>();
 		for (Element element : env.getElementsAnnotatedWith(Repository.class)) {
 			try {
 				DaoInfo dao = RepositoryParser.parser(element);
 				daos.add(dao);
 				log(TAG, "dao: " + dao);
-			} catch (IllegalStateException e) {
-				error(element, e.getMessage());
+			} catch (ProcessException e) {
+				error(e.getElement(), e.getMessage());
 				continue;
 			}
 		}
 
+        // 将Dao和entity关联起来
 		for (DaoInfo dao : daos) {
 			for (Table table : tables) {
 				Clazz c1 = dao.getEntityClass();
@@ -116,16 +120,21 @@ public final class YodaoProcessor extends AbstractProcessor {
 			}
 		}
 
+        // 生成 DaoImpl　Java文件
 		for (Table table : tables) {
 			if (table.getDaoInfo() != null) {
-				createSourceFile(filer, table);
+				try {
+					createSourceFile(filer, table);
+				} catch (ProcessException e) {
+                    error(e.getElement(), e.getMessage());
+				}
 			}
 		}
 //		createSourceFile(filer, tables); // for DAO factory
 		return true;
 	}
 
-	private void createSourceFile(Filer filer, Table table) {
+	private void createSourceFile(Filer filer, Table table) throws ProcessException {
 		Element typeElement = table.getElement();
 		try {
 			String javaContent = table.brewJava();
@@ -136,9 +145,9 @@ public final class YodaoProcessor extends AbstractProcessor {
 			writer.write(javaContent);
 			writer.flush();
 			writer.close();
-		} catch (IllegalStateException e) {
-			error(typeElement, "Unable to generate DAO for entity %s: %s",
-					typeElement, e.getMessage());
+		} catch (ProcessException e) {
+			error(e.getElement() != null ? e.getElement() : typeElement,
+                    "Unable to generate DAO for entity %s: %s", typeElement, e.getMessage());
 		} catch (IOException e) {
 			error(typeElement, "Unable to generate DAO for entity %s: %s",
 					typeElement, e.getMessage());
@@ -246,6 +255,7 @@ public final class YodaoProcessor extends AbstractProcessor {
 				parseColumn(element, field, column);
 			}
 
+            field.setElement(element);
 		}
 		// log(TAG, "field: " + field);
 		return field;

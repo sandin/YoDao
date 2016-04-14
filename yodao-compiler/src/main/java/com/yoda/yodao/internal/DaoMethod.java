@@ -4,6 +4,8 @@ import java.util.Arrays;
 
 import com.yoda.yodao.internal.query.YoQuery;
 
+import javax.lang.model.element.Element;
+
 public class DaoMethod {
 
 	private String methodName;
@@ -15,6 +17,8 @@ public class DaoMethod {
 	private String sql;
 
 	private YoQuery query;
+
+	private Element element;
 
 	public String getMethodName() {
 		return methodName;
@@ -40,7 +44,7 @@ public class DaoMethod {
 		this.returnType = returnType;
 	}
 
-	public YoQuery toQuery() {
+	public YoQuery toQuery() throws ProcessException {
 		return RepositoryParser.parseDaoMethodToQuery(this);
 	}
 
@@ -60,7 +64,15 @@ public class DaoMethod {
 		this.sql = sql;
 	}
 
-	@Override
+    public Element getElement() {
+        return element;
+    }
+
+    public void setElement(Element element) {
+        this.element = element;
+    }
+
+    @Override
 	public String toString() {
 		return "DaoMethod [methodName=" + methodName + ", methodParams="
 				+ Arrays.toString(methodParams) + ", returnType=" + returnType

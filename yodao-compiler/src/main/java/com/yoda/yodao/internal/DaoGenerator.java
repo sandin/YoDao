@@ -91,9 +91,9 @@ public class DaoGenerator {
 			+ TAB + "}\n" //
 			+ TAB + "\n";
 
-	public String generate(Table table) {
+	public String generate(Table table) throws ProcessException {
 		if (table == null) {
-			throw new IllegalArgumentException("arg0[table] cann't be null");
+			throw new ProcessException(null, "arg0[table] cann't be null");
 		}
 
 		DaoInfo dao = table.getDaoInfo();
@@ -404,7 +404,7 @@ public class DaoGenerator {
 	}
 
 	// cursorToObject
-	private void genCursorToObject(StringBuilder sb, Table table) {
+	private void genCursorToObject(StringBuilder sb, Table table) throws ProcessException  {
 		Clazz clazz = table.getEntityClass();
 		Map<String, Object> args = new HashMap<String, Object>();
 		args.put("T", clazz.className);
@@ -412,7 +412,7 @@ public class DaoGenerator {
 		sb.append(format(FORMAT_CURSOR_TO_OBJECT, args));
 	}
 
-	private String _genToObject(Table table) {
+	private String _genToObject(Table table) throws ProcessException {
 		StringBuilder sb = new StringBuilder();
 		List<Field> fields = table.getFields();
 		if (fields != null) {
@@ -423,8 +423,8 @@ public class DaoGenerator {
 					sb.append(TAB2
 							+ String.format("obj.%s(%s);\n", setter, getValue));
 				} else {
-					throw new IllegalStateException(String.format(
-							"Cann't support type %s for %s field",
+					throw new ProcessException(field.getElement(), String.format(
+							"Can't support type %s for %s field",
 							field.getFieldType(), field.getFieldName()));
 				}
 			}

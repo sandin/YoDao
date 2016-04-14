@@ -40,7 +40,7 @@ public class Table {
 		this.fields = fields;
 	}
 
-	public String brewJava() {
+	public String brewJava() throws ProcessException {
 		return new DaoGenerator().generate(this);
 	}
 

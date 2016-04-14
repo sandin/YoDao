@@ -26,7 +26,7 @@ import com.yoda.yodao.internal.query.YoSelection;
 
 public class RepositoryParser {
 
-	public static DaoInfo parser(Element element) {
+	public static DaoInfo parser(Element element) throws ProcessException {
 		DaoInfo daoInfo = new DaoInfo();
 		Repository repository = element.getAnnotation(Repository.class);
 		String elementName = element.asType().toString();
@@ -41,7 +41,7 @@ public class RepositoryParser {
 			List<? extends TypeMirror> interfaces = ((TypeElement) element)
 					.getInterfaces();
 			if (interfaces == null || interfaces.size() == 0) {
-				throw new IllegalStateException(elementName
+				throw new ProcessException(element, elementName
 						+ " must to be a interface.");
 			}
 			genericType = Utils.getGenericType(interfaces.get(0), 0);
@@ -56,12 +56,11 @@ public class RepositoryParser {
 			}
 		}
 		if (genericType == null) {
-			throw new IllegalStateException(elementName
+			throw new ProcessException(element, elementName
 					+ " must has a generic type which it's the entity class");
 		}
 		if (pkType == null) {
-			throw new IllegalStateException(
-					elementName
+			throw new ProcessException(element, elementName
 							+ " must has a generic type which it's the entity's PK class");
 		}
 		String className = genericType.toString();
@@ -123,6 +122,7 @@ public class RepositoryParser {
 						method.setMethodParams(params);
 					}
 
+					method.setElement(e);
 					methods.add(method);
 				}
 			}
@@ -226,7 +226,7 @@ public class RepositoryParser {
 		return result;
 	}
 
-	public static YoQuery parseDaoMethodToQuery(DaoMethod method) {
+	public static YoQuery parseDaoMethodToQuery(DaoMethod method) throws ProcessException {
 		YoQuery query = null;
 		if (method != null) {
 			query = new YoQuery();
@@ -254,8 +254,8 @@ public class RepositoryParser {
 			}
 		}
 		if (query == null || query.getCrud() == null) {
-			throw new IllegalStateException("Cann't support method name: "
-					+ method.getMethodName());
+			throw new ProcessException(method != null ? method.getElement() : null,
+                    "Cann't support method name: " + method.getMethodName());
 		}
 		return query;
 	}
@@ -377,7 +377,7 @@ public class RepositoryParser {
 		return null;
 	}
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws Exception {
 		String methodName = "findOneByUsernamdeAndAge";
 		/*-
 		List<String> words = splitByWord(methodName);
