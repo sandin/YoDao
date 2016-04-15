@@ -43,7 +43,6 @@ buildscript {
 
 repositories {
     jcenter()
-    maven { url 'https://dl.bintray.com/sandin/maven/' }
 }
 
 dependencies {
@@ -51,8 +50,6 @@ dependencies {
   	apt 'com.lds:yodao-compiler:0.2.1'
 }
 ```
-
-NOTE: 目前使用bintray的maven源，以后将上传jcenter
 
 ### 2. JavaBean增加注解
 
