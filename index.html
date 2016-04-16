@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="description" content="Yodao : YoDao Is A Simple and Fast ORM library for android.">
+
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>Yodao</title>
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/sandin/YoDao">View on GitHub</a>
+
+          <h1 id="project_title">Yodao</h1>
+          <h2 id="project_tagline">YoDao Is A Simple and Fast ORM library for android.</h2>
+
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/sandin/YoDao/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/sandin/YoDao/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <h1>
+<a id="yodao框架说明" class="anchor" href="#yodao%E6%A1%86%E6%9E%B6%E8%AF%B4%E6%98%8E" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>YoDao框架说明</h1>
+
+<p>[TOC]</p>
+
+<h2>
+<a id="简要说明" class="anchor" href="#%E7%AE%80%E8%A6%81%E8%AF%B4%E6%98%8E" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>简要说明</h2>
+
+<p>YoDao是一个简单又高效的Android ORM开源框架。</p>
+
+<p>项目主页：<a href="https://github.com/sandin/YoDao">https://github.com/sandin/YoDao</a></p>
+
+<p>项目作者：<a href="mailto:lds2012@gmail.com">sandin</a></p>
+
+<h3>
+<a id="1实现目标" class="anchor" href="#1%E5%AE%9E%E7%8E%B0%E7%9B%AE%E6%A0%87" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>1.实现目标</h3>
+
+<p>项目受Hibernate等ORM框架启发，并实现了Java Persistence API标准，在大部分系统设计上学习了<a href="http://docs.spring.io/spring-data/jpa/docs/current/reference/html/">Spring Data JPA</a>框架，所以在使用和其API上十分相似。</p>
+
+<p>本项目和GreenDao，OrmLite等传统ORM框架不同的是，为了提高性能所以没有使用运行时的反射来解析注解，而使用<a href="https://github.com/square/dagger">dagger</a>和<a href="https://github.com/JakeWharton/butterknife">butterknife</a>一样的技术在编译时解析注解并自动生成代码，因此在使用ORM来提高开发效率的同时也没有牺牲运行时的性能和速度。</p>
+
+<p>因此框架的目标是实现一个快速而轻量的ORM框架，即可以提高开发效率，但又不牺牲运行时的性能。</p>
+
+<h3>
+<a id="2框架结构" class="anchor" href="#2%E6%A1%86%E6%9E%B6%E7%BB%93%E6%9E%84" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>2.框架结构</h3>
+
+<p>整个框架和butterknife一样，分为三个子项目：</p>
+
+<ol>
+<li>主项目，这是一个Android library项目，在使用的时候引用即可。</li>
+<li>编译项目，这是一个编译工具，在IDE或gradle里配置即可，无需打包到APK里。</li>
+<li>实例项目，DEMO演示。</li>
+</ol>
+
+<h3>
+<a id="3加入项目" class="anchor" href="#3%E5%8A%A0%E5%85%A5%E9%A1%B9%E7%9B%AE" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>3.加入项目</h3>
+
+<p>此项目为开源项目，因此欢迎任何有着开源精神的开发者参与进来，有意者可以联系作者，或直接在github上<a href="https://github.com/sandin/YoDao">fork</a>该项目。</p>
+
+<h2>
+<a id="使用说明" class="anchor" href="#%E4%BD%BF%E7%94%A8%E8%AF%B4%E6%98%8E" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>使用说明</h2>
+
+<p>基本使用是和dagger一样，这里仅描述android studio的使用方式：</p>
+
+<h3>
+<a id="1-修改gradle配置" class="anchor" href="#1-%E4%BF%AE%E6%94%B9gradle%E9%85%8D%E7%BD%AE" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>1. 修改gradle配置</h3>
+
+<p>在 <code>build.gradle</code> 文件加入一下配置：</p>
+
+<div class="highlight highlight-source-groovy"><pre>apply <span class="pl-c1">plugin</span>: <span class="pl-s"><span class="pl-pds">'</span>com.neenbedankt.android-apt<span class="pl-pds">'</span></span>
+
+<span class="pl-c">// ...</span>
+
+buildscript {
+    dependencies {
+        classpath <span class="pl-s"><span class="pl-pds">'</span>com.neenbedankt.gradle.plugins:android-apt:1.8<span class="pl-pds">'</span></span>
+    }
+}
+
+repositories {
+    jcenter()
+}
+
+dependencies {
+    compile <span class="pl-s"><span class="pl-pds">'</span>com.lds:yodao:0.2.1<span class="pl-pds">'</span></span>
+    apt <span class="pl-s"><span class="pl-pds">'</span>com.lds:yodao-compiler:0.2.1<span class="pl-pds">'</span></span>
+}</pre></div>
+
+<p>注意：目前仅上传到<a href="https://bintray.com/bintray/jcenter">jcenter</a>，还没有同步到Maven Center。</p>
+
+<h3>
+<a id="2-javabean增加注解" class="anchor" href="#2-javabean%E5%A2%9E%E5%8A%A0%E6%B3%A8%E8%A7%A3" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>2. JavaBean增加注解</h3>
+
+<div class="highlight highlight-source-java"><pre><span class="pl-k">import</span> <span class="pl-smi">com.yoda.yodao.annotation.Column</span>;
+<span class="pl-k">import</span> <span class="pl-smi">com.yoda.yodao.annotation.GeneratedValue</span>;
+<span class="pl-k">import</span> <span class="pl-smi">com.yoda.yodao.annotation.GenerationType</span>;
+<span class="pl-k">import</span> <span class="pl-smi">com.yoda.yodao.annotation.Id</span>;
+
+@<span class="pl-smi">Entity</span>
+@Table(name<span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">"</span>user<span class="pl-pds">"</span></span>)
+<span class="pl-k">public</span> <span class="pl-k">class</span> <span class="pl-en">User</span> <span class="pl-k">implements</span> <span class="pl-e">Serializable</span> {
+
+    <span class="pl-k">@Id</span>
+    <span class="pl-k">@GeneratedValue</span>(<span class="pl-c1">strategy</span> <span class="pl-k">=</span> <span class="pl-smi">GenerationType</span><span class="pl-c1"><span class="pl-k">.</span>AUTO</span>)
+    <span class="pl-k">private</span> <span class="pl-k">long</span> id;
+
+    <span class="pl-k">@Column</span>
+    <span class="pl-k">private</span> <span class="pl-smi">String</span> name;
+
+    <span class="pl-k">@Column</span>(<span class="pl-c1">name</span> <span class="pl-k">=</span> <span class="pl-s"><span class="pl-pds">"</span>age<span class="pl-pds">"</span></span>)
+    <span class="pl-k">private</span> <span class="pl-k">int</span> age;
+
+    <span class="pl-k">public</span> <span class="pl-en">User</span>() {
+    }
+
+    <span class="pl-c">// Getter &amp; Setter</span>
+    <span class="pl-c">// ...</span>
+}</pre></div>
+
+<p>这里使用的注解和JPA一模一样，只是因为android里面没有 <code>javax.persistence </code>包，所以所有的注解都放置在 <code>com.yoda.yodao.annotation</code> 包下，但注解类和使用方法是一样的，可以说完全兼容JPA标准的实体类。</p>
+
+<p>这里注意Getter&amp;Setter方法的命令必须完全遵循POJO的命名规范，否则会编译不过。并建议使用驼峰命名。</p>
+
+<h3>
+<a id="3-dao的定义" class="anchor" href="#3-dao%E7%9A%84%E5%AE%9A%E4%B9%89" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>3. DAO的定义</h3>
+
+<p>这里设计和Spring Data JPA框架一样，只要定义个 <code>interface</code> ，并继承 <code>YoDao</code> 即完成了Dao的编码工作，框架会根据这个接口的定义自动生成其实现类的代码。</p>
+
+<p>例如：</p>
+
+<div class="highlight highlight-source-java"><pre><span class="pl-k">public</span> <span class="pl-k">interface</span> <span class="pl-en">UserDao</span> <span class="pl-k">extends</span> <span class="pl-e">YoDao&lt;<span class="pl-smi">User</span>, <span class="pl-smi">Long</span>&gt;</span> {
+
+    <span class="pl-smi">User</span> <span class="pl-en">findOneByName</span>(<span class="pl-smi">String</span> <span class="pl-v">name</span>);
+
+    <span class="pl-k">List&lt;<span class="pl-smi">User</span>&gt;</span> <span class="pl-en">findListByNameAndAge</span>(<span class="pl-smi">String</span> <span class="pl-v">name</span>, <span class="pl-k">int</span> <span class="pl-v">age</span>);
+
+    <span class="pl-k">List&lt;<span class="pl-smi">User</span>&gt;</span> <span class="pl-en">findListOrderByAge</span>();
+
+    <span class="pl-k">List&lt;<span class="pl-smi">User</span>&gt;</span> <span class="pl-en">findListOrderByAgeDesc</span>();
+
+    <span class="pl-k">long</span> <span class="pl-en">countByAge</span>(<span class="pl-k">int</span> <span class="pl-v">age</span>);
+
+}</pre></div>
+
+<p><code>YoDao&lt;T, ID&gt;</code> 的两个泛型：</p>
+
+<ol>
+<li>T，映射的实体类</li>
+<li>ID，主键PK的类</li>
+</ol>
+
+<h3>
+<a id="4-在数据库里建表" class="anchor" href="#4-%E5%9C%A8%E6%95%B0%E6%8D%AE%E5%BA%93%E9%87%8C%E5%BB%BA%E8%A1%A8" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>4. 在数据库里建表</h3>
+
+<p>框架已经将所有实体对应的table的建表SQL都生成了，只需要在建表的时候调用：</p>
+
+<div class="highlight highlight-source-java"><pre><span class="pl-k">public</span> <span class="pl-k">class</span> <span class="pl-en">MySQLiteOpenHelper</span> 
+            <span class="pl-k">extends</span> <span class="pl-e">android.database.sqlite<span class="pl-k">.</span>SQLiteOpenHelper</span> {
+
+    <span class="pl-k">@Override</span>
+    <span class="pl-k">public</span> <span class="pl-k">void</span> <span class="pl-en">onCreate</span>(<span class="pl-smi">SQLiteDatabase</span> <span class="pl-v">db</span>) {
+        <span class="pl-smi">DaoFactory</span><span class="pl-k">.</span>create(<span class="pl-smi">HairDao</span><span class="pl-k">.</span>class, <span class="pl-c1">null</span>)<span class="pl-k">.</span>onCreateTable(db);
+    }
+
+    <span class="pl-k">@Override</span>
+    <span class="pl-k">public</span> <span class="pl-k">void</span> <span class="pl-en">onUpgrade</span>(<span class="pl-smi">SQLiteDatabase</span> <span class="pl-v">db</span>, <span class="pl-k">int</span> <span class="pl-v">oldVersion</span>, <span class="pl-k">int</span> <span class="pl-v">newVersion</span>) {
+        <span class="pl-smi">DaoFactory</span><span class="pl-k">.</span>create(<span class="pl-smi">HairDao</span><span class="pl-k">.</span>class, <span class="pl-c1">null</span>)<span class="pl-k">.</span>onUpgradeTable(db, oldVersion, newVersion);
+        onCreate(db);
+    }
+
+}</pre></div>
+
+<p>在修改实体类以后（如增加字段），只需要重新build一下，重建表的时候数据结构就会变化。</p>
+
+<h3>
+<a id="5-使用你的dao" class="anchor" href="#5-%E4%BD%BF%E7%94%A8%E4%BD%A0%E7%9A%84dao" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>5. 使用你的Dao</h3>
+
+<div class="highlight highlight-source-java"><pre><span class="pl-smi">UserDao</span> userDao <span class="pl-k">=</span> <span class="pl-smi">DaoFactory</span><span class="pl-k">.</span>create(<span class="pl-smi">UserDao</span><span class="pl-k">.</span>class, mSQLiteOpenHelper);
+
+<span class="pl-c">// insert</span>
+<span class="pl-smi">User</span> user <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-smi">User</span>();
+user<span class="pl-k">.</span>setName(<span class="pl-s"><span class="pl-pds">"</span>Jack<span class="pl-pds">"</span></span>);
+user<span class="pl-k">.</span>setAge(<span class="pl-c1">23</span>);
+userDao<span class="pl-k">.</span>save(user);
+
+<span class="pl-c">// update</span>
+user<span class="pl-k">.</span>setName(<span class="pl-s"><span class="pl-pds">"</span>New Name<span class="pl-pds">"</span></span>);
+userDao<span class="pl-k">.</span>update(user);
+
+<span class="pl-c">// query</span>
+<span class="pl-k">List&lt;<span class="pl-smi">User</span>&gt;</span> users <span class="pl-k">=</span> userDao<span class="pl-k">.</span>findAll();
+user <span class="pl-k">=</span> userDao<span class="pl-k">.</span>findOne(user<span class="pl-k">.</span>getId());
+
+<span class="pl-c">// delete</span>
+userDao<span class="pl-k">.</span>delete(user); </pre></div>
+
+<h2>
+<a id="注解说明" class="anchor" href="#%E6%B3%A8%E8%A7%A3%E8%AF%B4%E6%98%8E" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>注解说明</h2>
+
+<h3>
+<a id="entity" class="anchor" href="#entity" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a><a href="https://github.com/Entity" class="user-mention">@Entity</a>
+</h3>
+
+<p>使用在需要映射的实体类上，框架只会处理有此注解的实体类。</p>
+
+<h3>
+<a id="tablenametable_ame" class="anchor" href="#tablenametable_ame" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a><a href="https://github.com/Table" class="user-mention">@Table</a>(name='table_ame')</h3>
+
+<p>使用在需要映射的实体类上，属性name为表名，不提供name的时候将自动使用类名作为表名。（表名的命名规范是全部小写，下划线分割：如class名为 <code>UserInfo</code> 表名自动是 <code>user_info</code>) </p>
+
+<h3>
+<a id="id" class="anchor" href="#id" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a><a href="https://github.com/Id" class="user-mention">@Id</a>
+</h3>
+
+<p>使用在需要映射成表主键的成员变量上，主键支持 <code>int</code> <code>long</code> <code>String</code> 类型。</p>
+
+<h3>
+<a id="generatedvalue" class="anchor" href="#generatedvalue" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>@GeneratedValue</h3>
+
+<p>使用在需要映射成主键的成员变量上，</p>
+
+<p>属性<code>strategy</code>为主键的生成策略：</p>
+
+<ol>
+<li>
+<code>AUTO</code> 主键自增</li>
+<li>
+<code>UUID</code> 主键使用UUID随机生成</li>
+</ol>
+
+<h3>
+<a id="columnnamecolumn_ame" class="anchor" href="#columnnamecolumn_ame" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a><a href="https://github.com/Column" class="user-mention">@Column</a>(name="column_ame")</h3>
+
+<p>使用在需要映射的成员变量上</p>
+
+<p>属性<code>name</code>为表列名，不提供name的时候将默认使用变量名作为列名（一样会转成全部小写，下划线分割的命名规范）</p>
+
+<p>属性<code>unique</code>对于SQL里面的UNIQUE</p>
+
+<p>属性<code>nullable</code>对应SQL里面的NOT NULL</p>
+
+<p>属性<code>length</code>对于SQL里面的长度限制</p>
+
+<p>其他属性请参考JPA。</p>
+
+<h3>
+<a id="notcolumn" class="anchor" href="#notcolumn" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>@NotColumn</h3>
+
+<p>使用在不需要映射的成员变量上，因为框架会将需要实体类的所有成员变量都进行映射，使用了该注解告诉框架这个字段不需要在表中持久化，则在建表时忽略该字段。</p>
+
+<h3>
+<a id="repository" class="anchor" href="#repository" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a><a href="https://github.com/Repository" class="user-mention">@Repository</a>
+</h3>
+
+<p>使用在自己编写的DAO上面，表示该DAO是需要框架来生成实现类的代码。</p>
+
+<h3>
+<a id="query" class="anchor" href="#query" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a><a href="https://github.com/Query" class="user-mention">@Query</a>
+</h3>
+
+<p>使用在DAO的方法上面，表示这个方法不需要自动生成，自定义SQL查询。</p>
+
+<p>属性<code>value</code>为自定义查询的SQL语句。</p>
+
+<p>目前仅支持原生SQL，今后将支持在HSQL语法。</p>
+
+<h3>
+<a id="其他注解" class="anchor" href="#%E5%85%B6%E4%BB%96%E6%B3%A8%E8%A7%A3" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>其他注解</h3>
+
+<p>今后将陆续开始支持 <code>OneToOne</code> <code>OneToMany</code> <code>ManyToOne</code> <code>ManyToMany</code> 等JPA的注解。</p>
+
+<h2>
+<a id="yodao增删改查接口" class="anchor" href="#yodao%E5%A2%9E%E5%88%A0%E6%94%B9%E6%9F%A5%E6%8E%A5%E5%8F%A3" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>YoDao增删改查接口</h2>
+
+<h3>
+<a id="save" class="anchor" href="#save" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>save()</h3>
+
+<div class="highlight highlight-source-java"><pre><span class="pl-c">/**</span>
+<span class="pl-c"> * Saves a given entity. Use the returned instance for further operations as</span>
+<span class="pl-c"> * the save operation might have changed the entity instance completely.</span>
+<span class="pl-c"> *</span>
+<span class="pl-c"> * @param entity</span>
+<span class="pl-c"> * @return the saved entity</span>
+<span class="pl-c"> */</span>
+<span class="pl-k">boolean</span> save(<span class="pl-smi">T</span> entity);
+
+<span class="pl-c">/**</span>
+<span class="pl-c"> * Saves all given entities.</span>
+<span class="pl-c"> *</span>
+<span class="pl-c"> * @param entities</span>
+<span class="pl-c"> * @return</span>
+<span class="pl-c"> */</span>
+<span class="pl-k">boolean</span> save(<span class="pl-k">List&lt;<span class="pl-smi">T</span>&gt;</span> entities);</pre></div>
+
+<h3>
+<a id="update" class="anchor" href="#update" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>update()</h3>
+
+<div class="highlight highlight-source-java"><pre><span class="pl-c">/**</span>
+<span class="pl-c">    * update a row by primary key</span>
+<span class="pl-c">    * </span>
+<span class="pl-c">    * @param entity</span>
+<span class="pl-c">    * @return</span>
+<span class="pl-c">    */</span>
+<span class="pl-k">int</span> update(<span class="pl-smi">T</span> entity);
+
+<span class="pl-c">/**</span>
+<span class="pl-c"> * update by fields</span>
+<span class="pl-c"> * </span>
+<span class="pl-c"> * @param entity</span>
+<span class="pl-c"> * @param whereClause</span>
+<span class="pl-c"> * @param whereArgs</span>
+<span class="pl-c"> * @return</span>
+<span class="pl-c"> */</span>
+<span class="pl-k">int</span> updateByFields(<span class="pl-smi">T</span> entity, <span class="pl-smi">String</span> whereClause,
+           <span class="pl-k">String</span>[] whereArgs);
+
+<span class="pl-c">/**</span>
+<span class="pl-c"> * update some fields</span>
+<span class="pl-c"> * </span>
+<span class="pl-c"> * @param values</span>
+<span class="pl-c"> * @param whereClause</span>
+<span class="pl-c"> * @param whereArgs</span>
+<span class="pl-c"> * @return</span>
+<span class="pl-c"> */</span>
+<span class="pl-k">int</span> updateByFields(<span class="pl-smi">ContentValues</span> values, <span class="pl-smi">String</span> whereClause,
+           <span class="pl-k">String</span>[] whereArgs);</pre></div>
+
+<h3>
+<a id="find" class="anchor" href="#find" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>find()</h3>
+
+<div class="highlight highlight-source-java"><pre><span class="pl-c">/**</span>
+<span class="pl-c"> * Retrives an entity by its primary key.</span>
+<span class="pl-c"> *</span>
+<span class="pl-c"> * @param id</span>
+<span class="pl-c"> * @return the entity with the given primary key or {@code null} if none</span>
+<span class="pl-c"> *         found</span>
+<span class="pl-c"> * @throws IllegalArgumentException</span>
+<span class="pl-c"> *             if primaryKey is {@code null}</span>
+<span class="pl-c"> */</span>
+<span class="pl-smi">T</span> findOne(<span class="pl-c1">ID</span> id);
+
+<span class="pl-c">/**</span>
+<span class="pl-c"> * Retrives an entity by its fields</span>
+<span class="pl-c"> * </span>
+<span class="pl-c"> * @param selection</span>
+<span class="pl-c"> * @param selectionArgs</span>
+<span class="pl-c"> * @param groupBy</span>
+<span class="pl-c"> * @param having</span>
+<span class="pl-c"> * @param orderBy</span>
+<span class="pl-c"> * @return</span>
+<span class="pl-c"> */</span>
+<span class="pl-smi">T</span> findOneByFields(<span class="pl-smi">String</span> selection, <span class="pl-k">String</span>[] selectionArgs, <span class="pl-smi">String</span> groupBy,
+      <span class="pl-smi">String</span> having, <span class="pl-smi">String</span> orderBy);
+
+<span class="pl-c">/**</span>
+<span class="pl-c"> * Retrives an entity by its fields</span>
+<span class="pl-c"> * </span>
+<span class="pl-c"> * @param selection</span>
+<span class="pl-c"> * @param selectionArgs</span>
+<span class="pl-c"> * @param orderBy</span>
+<span class="pl-c"> * @return</span>
+<span class="pl-c"> */</span>
+<span class="pl-smi">T</span> findOneByFields(<span class="pl-smi">String</span> selection, <span class="pl-k">String</span>[] selectionArgs, <span class="pl-smi">String</span> orderBy);
+
+<span class="pl-c">/**</span>
+<span class="pl-c"> * Retrives an entity by sql</span>
+<span class="pl-c"> * </span>
+<span class="pl-c"> * @param sql</span>
+<span class="pl-c"> * @return</span>
+<span class="pl-c"> */</span>
+<span class="pl-smi">T</span> findOneBySql(<span class="pl-smi">String</span> sql, <span class="pl-k">String</span>[] selectionArgs);
+</pre></div>
+
+<div class="highlight highlight-source-java"><pre><span class="pl-c">/**</span>
+<span class="pl-c"> * Returns all instances of the type.</span>
+<span class="pl-c"> *</span>
+<span class="pl-c"> * @return all entities</span>
+<span class="pl-c"> */</span>
+<span class="pl-k">List&lt;<span class="pl-smi">T</span>&gt;</span> findAll();
+
+<span class="pl-c">/**</span>
+<span class="pl-c"> * Find List By Fields</span>
+<span class="pl-c"> * </span>
+<span class="pl-c"> * @param selection</span>
+<span class="pl-c"> * @param selectionArgs</span>
+<span class="pl-c"> * @param groupBy</span>
+<span class="pl-c"> * @param having</span>
+<span class="pl-c"> * @param orderBy</span>
+<span class="pl-c"> * @return</span>
+<span class="pl-c"> */</span>
+<span class="pl-k">List&lt;<span class="pl-smi">T</span>&gt;</span> findListByFields(<span class="pl-smi">String</span> selection, <span class="pl-k">String</span>[] selectionArgs,
+      <span class="pl-smi">String</span> groupBy, <span class="pl-smi">String</span> having, <span class="pl-smi">String</span> orderBy);
+
+<span class="pl-c">/**</span>
+<span class="pl-c"> * Find List By Fields</span>
+<span class="pl-c"> * </span>
+<span class="pl-c"> * @param selection</span>
+<span class="pl-c"> * @param selectionArgs</span>
+<span class="pl-c"> * @param orderBy</span>
+<span class="pl-c"> * @return</span>
+<span class="pl-c"> */</span>
+<span class="pl-k">List&lt;<span class="pl-smi">T</span>&gt;</span> findListByFields(<span class="pl-smi">String</span> selection, <span class="pl-k">String</span>[] selectionArgs,
+      <span class="pl-smi">String</span> orderBy);
+
+<span class="pl-c">/**</span>
+<span class="pl-c"> * Find List By SQL</span>
+<span class="pl-c"> * </span>
+<span class="pl-c"> * @param sql</span>
+<span class="pl-c"> * @return</span>
+<span class="pl-c"> */</span>
+<span class="pl-k">List&lt;<span class="pl-smi">T</span>&gt;</span> findListBySql(<span class="pl-smi">String</span> sql, <span class="pl-k">String</span>[] selectionArgs);</pre></div>
+
+<h3>
+<a id="delete" class="anchor" href="#delete" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>delete()</h3>
+
+<div class="highlight highlight-source-java"><pre><span class="pl-c">/**</span>
+<span class="pl-c"> * Deletes the entity with the given id.</span>
+<span class="pl-c"> * </span>
+<span class="pl-c"> * @param id</span>
+<span class="pl-c"> */</span>
+<span class="pl-k">int</span> delete(<span class="pl-c1">ID</span> id);
+
+<span class="pl-c">/**</span>
+<span class="pl-c"> * Deletes a given entity.</span>
+<span class="pl-c"> *</span>
+<span class="pl-c"> * @param entity</span>
+<span class="pl-c"> */</span>
+<span class="pl-k">int</span> delete(<span class="pl-smi">T</span> entity);
+
+<span class="pl-c">/**</span>
+<span class="pl-c"> * Deletes the given entities.</span>
+<span class="pl-c"> *</span>
+<span class="pl-c"> * @param entities</span>
+<span class="pl-c"> */</span>
+<span class="pl-k">int</span> delete(<span class="pl-k">List&lt;<span class="pl-smi">T</span>&gt;</span> entities);
+
+<span class="pl-c">/**</span>
+<span class="pl-c"> * Deletes all entities managed by the repository.</span>
+<span class="pl-c"> */</span>
+<span class="pl-k">int</span> deleteAll();
+
+<span class="pl-c">/**</span>
+<span class="pl-c"> * Deletes entities by fields</span>
+<span class="pl-c"> * </span>
+<span class="pl-c"> * @param selection</span>
+<span class="pl-c"> * @param selectionArgs</span>
+<span class="pl-c"> * @return</span>
+<span class="pl-c"> */</span>
+<span class="pl-k">int</span> deleteByFields(<span class="pl-smi">String</span> selection, <span class="pl-k">String</span>[] selectionArgs);</pre></div>
+
+<h3>
+<a id="exists" class="anchor" href="#exists" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>exists()</h3>
+
+<div class="highlight highlight-source-java"><pre><span class="pl-c">/**</span>
+<span class="pl-c"> * Returns whether an entity with the given id exists.</span>
+<span class="pl-c"> *</span>
+<span class="pl-c"> * @param id</span>
+<span class="pl-c"> * @return true if an entity with the given id exists, alse otherwise</span>
+<span class="pl-c"> * @throws IllegalArgumentException</span>
+<span class="pl-c"> *             if primaryKey is {@code null}</span>
+<span class="pl-c"> */</span>
+<span class="pl-k">boolean</span> exists(<span class="pl-c1">ID</span> id);</pre></div>
+
+<h3>
+<a id="count" class="anchor" href="#count" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>count()</h3>
+
+<div class="highlight highlight-source-java"><pre><span class="pl-c">/**</span>
+<span class="pl-c"> * Returns the number of entities available.</span>
+<span class="pl-c"> *</span>
+<span class="pl-c"> * @return the number of entities</span>
+<span class="pl-c"> */</span>
+<span class="pl-k">long</span> count();
+
+<span class="pl-c">/**</span>
+<span class="pl-c"> * Returns the number of entities with selections available.</span>
+<span class="pl-c"> * </span>
+<span class="pl-c"> * @param selections</span>
+<span class="pl-c"> * @param selectionArgs</span>
+<span class="pl-c"> * @return</span>
+<span class="pl-c"> */</span>
+<span class="pl-k">long</span> countByFields(<span class="pl-smi">String</span> selections, <span class="pl-k">String</span>[] selectionArgs);</pre></div>
+
+<h3>
+<a id="oncreatetable" class="anchor" href="#oncreatetable" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>onCreateTable()</h3>
+
+<p>这个方法在SQLOpenHelper中的onCreate()中调用，调用后才会执行建表语句。</p>
+
+<h3>
+<a id="onupgradetable" class="anchor" href="#onupgradetable" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>onUpgradeTable()</h3>
+
+<p>这个方法在SQLOpenHelper中的onUpgrade()中调用，调用后才会执行删除表语句。</p>
+
+<h2>
+<a id="daofactory工厂类" class="anchor" href="#daofactory%E5%B7%A5%E5%8E%82%E7%B1%BB" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>DaoFactory工厂类</h2>
+
+<h3>
+<a id="自动生成的dao" class="anchor" href="#%E8%87%AA%E5%8A%A8%E7%94%9F%E6%88%90%E7%9A%84dao" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>自动生成的DAO</h3>
+
+<p>实现类</p>
+
+<p>默认情况下，框架会根据你写的dao的包名和类名来生成实现类的包名和类名。</p>
+
+<p>例如，你的Dao为：</p>
+
+<div class="highlight highlight-source-java"><pre><span class="pl-smi">com.your.test.dao<span class="pl-k">.</span>UserDao</span></pre></div>
+
+<p>那么生成的实现类名为：</p>
+
+<div class="highlight highlight-source-java"><pre><span class="pl-smi">com.your.test.dao.impl<span class="pl-k">.</span>UserDaoImpl</span></pre></div>
+
+<p>在android studio里，自动的生成的代码在项目根目录下的<code>build/source/apt/debug</code>目录里 ，这个目录由插件决定，eclipse上可以自行配置。</p>
+
+<h3>
+<a id="实例化dao" class="anchor" href="#%E5%AE%9E%E4%BE%8B%E5%8C%96dao" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>实例化DAO</h3>
+
+<p>框架推荐不直接调用和实例化自动生成的Impl类，而应该使用 <code>DaoFactory</code> 来实例化Dao，例如：</p>
+
+<div class="highlight highlight-source-java"><pre><span class="pl-smi">UserDao</span> userDao <span class="pl-k">=</span> <span class="pl-smi">DaoFactory</span><span class="pl-k">.</span>create(<span class="pl-smi">UserDao</span><span class="pl-k">.</span>class, mSQLiteOpenHelper);</pre></div>
+
+<p>今后将支持通过注解来定义生命周期以支持对于指定Dao可选性的单例模式。目前所有Dao都默认非单例。</p>
+
+<h2>
+<a id="dao的写法" class="anchor" href="#dao%E7%9A%84%E5%86%99%E6%B3%95" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>DAO的写法</h2>
+
+<h3>
+<a id="自定义dao" class="anchor" href="#%E8%87%AA%E5%AE%9A%E4%B9%89dao" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>自定义Dao</h3>
+
+<p>一般情况下，自定义的 <code>dao</code> 只需要写一个空的　<code>interface</code> 然后继承 <code>YoDao</code>接口即够用了，因为接口里实现了大量增删改查的API。</p>
+
+<p>例如：</p>
+
+<div class="highlight highlight-source-java"><pre><span class="pl-k">public</span> <span class="pl-k">interface</span> <span class="pl-en">UserDao</span> <span class="pl-k">extends</span> <span class="pl-e">YoDao&lt;<span class="pl-smi">User</span>, <span class="pl-smi">Long</span>&gt;</span> {
+
+}</pre></div>
+
+<p>注意：两个泛型不要搞反了，第一个是实体类，第二个是主键。今后框架将会校验，目前还没有。</p>
+
+<h3>
+<a id="方法的定义" class="anchor" href="#%E6%96%B9%E6%B3%95%E7%9A%84%E5%AE%9A%E4%B9%89" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>方法的定义</h3>
+
+<p>对于接口无法满足的时候，则可以通过定义接口的方法来实现，这里必须按照指定的约定来写方法名，框架则会按照方法的定义来帮你实现。</p>
+
+<blockquote>
+<p>如果你写的方法名不被支持，则框架在编译时会提示哪一个方法定义出现了问题，请查询相关文档来修改方法的定义。</p>
+</blockquote>
+
+<p>以下列出所有支持的方法：</p>
+
+<h4>
+<a id="where" class="anchor" href="#where" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>WHERE</h4>
+
+<div class="highlight highlight-source-java"><pre><span class="pl-smi">User</span> findOneByName(<span class="pl-smi">String</span> name);
+<span class="pl-c">// SQL: select * from user where name = ? limit 1</span>
+
+<span class="pl-c">// AND</span>
+<span class="pl-k">List&lt;<span class="pl-smi">User</span>&gt;</span> findListByNameAndAge(<span class="pl-smi">String</span> name, <span class="pl-k">int</span> age);
+<span class="pl-c">// SQL: select * from user where name = ? and age = ?</span>
+
+<span class="pl-c">// OR</span>
+<span class="pl-k">List&lt;<span class="pl-smi">User</span>&gt;</span> findListByNameOrAge(<span class="pl-smi">String</span> name, <span class="pl-k">int</span> age);
+<span class="pl-c">// SQL: select * from user where name ? or age = ?</span></pre></div>
+
+<h4>
+<a id="group-by" class="anchor" href="#group-by" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>GROUP BY</h4>
+
+<div class="highlight highlight-source-java"><pre><span class="pl-k">List&lt;<span class="pl-smi">User</span>&gt;</span> findListByNameGroupByAge(<span class="pl-smi">String</span> name);
+<span class="pl-c">// SQL: select * from user where name = ? group by age;</span>
+
+<span class="pl-c">// HAVINGS</span>
+<span class="pl-c">// 暂不支持</span></pre></div>
+
+<h4>
+<a id="order-by" class="anchor" href="#order-by" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>ORDER BY</h4>
+
+<div class="highlight highlight-source-java"><pre><span class="pl-k">List&lt;<span class="pl-smi">User</span>&gt;</span> findListOrderByAge();
+<span class="pl-c">// SQL: select * from user order by age</span>
+
+<span class="pl-k">List&lt;<span class="pl-smi">User</span>&gt;</span> findListOrderByAgeDesc();
+<span class="pl-c">// SQL: select * from user order by age DESC</span></pre></div>
+
+<h4>
+<a id="update-1" class="anchor" href="#update-1" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>UPDATE</h4>
+
+<div class="highlight highlight-source-java"><pre><span class="pl-k">int</span> updateByName(<span class="pl-smi">User</span> user, <span class="pl-smi">String</span> name);
+<span class="pl-c">// SQL: update user ... where name = ?</span></pre></div>
+
+<h4>
+<a id="delete-1" class="anchor" href="#delete-1" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>DELETE</h4>
+
+<div class="highlight highlight-source-java"><pre><span class="pl-k">int</span> deleteByName(<span class="pl-smi">String</span> name);
+<span class="pl-c">// SQL: delete from user where name = ?</span></pre></div>
+
+<h4>
+<a id="count-1" class="anchor" href="#count-1" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>COUNT</h4>
+
+<div class="highlight highlight-source-java"><pre><span class="pl-k">long</span> countByAge(<span class="pl-k">int</span> age);</pre></div>
+
+<h4>
+<a id="原生sql" class="anchor" href="#%E5%8E%9F%E7%94%9Fsql" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>原生SQL</h4>
+
+<div class="highlight highlight-source-java"><pre>@Query(value<span class="pl-k">=</span> <span class="pl-s"><span class="pl-pds">"</span>select * from user where name = ?<span class="pl-pds">"</span></span>)
+<span class="pl-smi">User</span> findByUsername(<span class="pl-smi">String</span> username);</pre></div>
+
+<h4>
+<a id="关键要点" class="anchor" href="#%E5%85%B3%E9%94%AE%E8%A6%81%E7%82%B9" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>关键要点：</h4>
+
+<ol>
+<li>所有SQL的关键字都有意义，不能随便将其放置在方法名中，如 <code>BY</code> <code>Order</code> <code>Where</code> 等。</li>
+<li>注意字段名的命名规范，这里会将字段名转成和字段名一样的命名规范，即全部小写，下划线分词，例如　<code>findByUserName</code> 那么则直接使用 <code>where user_name = ?</code>的SQL来查找，并且会使用 <code>setUserName()</code> 和　<code>getUserName()</code> 方法来设值和取值。Java的字段名和方法名都保持驼峰命名法，数据库的表名和列名都按全部小写，下划线分割的命名法。</li>
+</ol>
+
+<h4>
+<a id="方法的参数" class="anchor" href="#%E6%96%B9%E6%B3%95%E7%9A%84%E5%8F%82%E6%95%B0" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>方法的参数</h4>
+
+<p>方法的参数的个数和顺序必须和方法定义的查询保持一致。</p>
+
+<h4>
+<a id="方法的返回值" class="anchor" href="#%E6%96%B9%E6%B3%95%E7%9A%84%E8%BF%94%E5%9B%9E%E5%80%BC" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>方法的返回值</h4>
+
+<p>方法的返回值类型只能是：　</p>
+
+<ol>
+<li>
+<code>T</code>  find语句</li>
+<li>
+<code>List&lt;T&gt;</code>　find语句</li>
+<li>
+<code>boolean</code>　exists语句</li>
+<li>
+<code>long</code>　count语句</li>
+<li>
+<code>int</code>　delete语句</li>
+</ol>
+      </section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">Yodao maintained by <a href="https://github.com/sandin">sandin</a></p>
+        <p>Published with <a href="https://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+    
+
+  </body>
+</html>
