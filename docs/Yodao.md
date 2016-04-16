@@ -4,21 +4,31 @@
 
 ## 简要说明
 
-YoDao是一个简单和快速的ORM框架。
+YoDao是一个简单又高效的Android ORM开源框架。
 
-### 技术实现：
+项目主页：https://github.com/sandin/YoDao
 
-项目受J2EE的Hibernate等ORM框架启发，并实现了Java Persistence API标准，在大部分系统设计学习了Sprint Data JPA框架，在使用和API上都和其相似。
+项目作者：[sandin](mailto:lds2012@gmail.com)
 
-在android上为了提高效率，没有使用运行时的反射来解析注解，而使用dagger和butterknife一样的技术在编译时解析注解并生成代码，因此非常高效。
+### 1.实现目标
 
-### 框架结构：
+项目受Hibernate等ORM框架启发，并实现了Java Persistence API标准，在大部分系统设计上学习了[Spring Data JPA](http://docs.spring.io/spring-data/jpa/docs/current/reference/html/)框架，所以在使用和其API上十分相似。
+
+本项目和GreenDao，OrmLite等传统ORM框架不同的是，为了提高性能所以没有使用运行时的反射来解析注解，而使用[dagger](https://github.com/square/dagger)和[butterknife](https://github.com/JakeWharton/butterknife)一样的技术在编译时解析注解并自动生成代码，因此在使用ORM来提高开发效率的同时也没有牺牲运行时的性能和速度。
+
+因此框架的目标是实现一个快速而轻量的ORM框架，即可以提高开发效率，但又不牺牲运行时的性能。
+
+### 2.框架结构
 
 整个框架和butterknife一样，分为三个子项目：
 
 1. 主项目，这是一个Android library项目，在使用的时候引用即可。
 2. 编译项目，这是一个编译工具，在IDE或gradle里配置即可，无需打包到APK里。
 3. 实例项目，DEMO演示。
+
+### 3.加入项目
+
+此项目为开源项目，因此欢迎任何有着开源精神的开发者参与进来，有意者可以联系作者，或直接在github上[fork](https://github.com/sandin/YoDao)该项目。
 
 
 
@@ -30,7 +40,7 @@ YoDao是一个简单和快速的ORM框架。
 
 在 `build.gradle` 文件加入一下配置：
 
-```groovy
+``` groovy
 apply plugin: 'com.neenbedankt.android-apt'
 
 // ...
@@ -46,14 +56,16 @@ repositories {
 }
 
 dependencies {
-	compile 'com.lds:yodao:0.2.1'
-  	apt 'com.lds:yodao-compiler:0.2.1'
+    compile 'com.lds:yodao:0.2.1'
+    apt 'com.lds:yodao-compiler:0.2.1'
 }
 ```
 
+注意：目前仅上传到[jcenter](https://bintray.com/bintray/jcenter)，还没有同步到Maven Center。
+
 ### 2. JavaBean增加注解
 
-```Java
+``` Java
 import com.yoda.yodao.annotation.Column;
 import com.yoda.yodao.annotation.GeneratedValue;
 import com.yoda.yodao.annotation.GenerationType;
@@ -81,17 +93,17 @@ public class User implements Serializable {
 }
 ```
 
-这里使用的注解和JPA一模一样，只是应该android里面没有 `javax.persistence `包，所以所有的注解都放置在 `com.yoda.yodao.annotation` 包下，但注解类是一样的，因此和是用了JPA标准的实体类是完全兼容的。
+这里使用的注解和JPA一模一样，只是因为android里面没有 `javax.persistence `包，所以所有的注解都放置在 `com.yoda.yodao.annotation` 包下，但注解类和使用方法是一样的，可以说完全兼容JPA标准的实体类。
 
-这里注意Getter&Setter方法的命令必须完全遵循POJO的命名规范，否则会编译不过。
+这里注意Getter&Setter方法的命令必须完全遵循POJO的命名规范，否则会编译不过。并建议使用驼峰命名。
 
 ### 3. DAO的定义
 
-这里设计和Spring Data JPA框架一样，只要定义个 `interface` ，并继承 `YoDao` 即完成了Dao的工作，框架会根据这个接口的定义自动生成实现类的代码。
+这里设计和Spring Data JPA框架一样，只要定义个 `interface` ，并继承 `YoDao` 即完成了Dao的编码工作，框架会根据这个接口的定义自动生成其实现类的代码。
 
 例如：
 
-```Java
+``` Java
 public interface UserDao extends YoDao<User, Long> {
 
     User findOneByName(String name);
@@ -101,13 +113,13 @@ public interface UserDao extends YoDao<User, Long> {
     List<User> findListOrderByAge();
 
     List<User> findListOrderByAgeDesc();
-    
+
     long countByAge(int age);
 
 }
 ```
 
-YoDao的两个泛型：
+`YoDao<T, ID>` 的两个泛型：
 
 1. T，映射的实体类
 2. ID，主键PK的类
@@ -118,10 +130,10 @@ YoDao的两个泛型：
 
 框架已经将所有实体对应的table的建表SQL都生成了，只需要在建表的时候调用：
 
-```java
+``` java
 public class MySQLiteOpenHelper 
 			extends android.database.sqlite.SQLiteOpenHelper {
-  
+
     @Override
     public void onCreate(SQLiteDatabase db) {
         DaoFactory.create(HairDao.class, null).onCreateTable(db);
@@ -132,17 +144,17 @@ public class MySQLiteOpenHelper
         DaoFactory.create(HairDao.class, null).onUpgradeTable(db, oldVersion, newVersion);
         onCreate(db);
     }
-    
+
 }
 ```
 
-在修改实体类以后（如增加字段），只需要重新build一下，重建表的时候表的数据结构就会变化。
+在修改实体类以后（如增加字段），只需要重新build一下，重建表的时候数据结构就会变化。
 
- 
+
 
 ### 5. 使用你的Dao
 
-```Java
+``` Java
 UserDao userDao = DaoFactory.create(UserDao.class, mSQLiteOpenHelper);
 
 // insert
@@ -181,7 +193,7 @@ userDao.delete(user);
 
 ### @GeneratedValue
 
-使用在需要映射成表主键的成员变量上，
+使用在需要映射成主键的成员变量上，
 
 属性`strategy`为主键的生成策略：
 
@@ -226,7 +238,7 @@ userDao.delete(user);
 
 ### save()
 
-```java
+``` java
 /**
  * Saves a given entity. Use the returned instance for further operations as
  * the save operation might have changed the entity instance completely.
@@ -247,7 +259,7 @@ boolean save(List<T> entities);
 
 ### update()
 
-```java
+``` java
 /**
     * update a row by primary key
     * 
@@ -281,7 +293,7 @@ int updateByFields(ContentValues values, String whereClause,
 
 ### find()
 
-```java
+``` java
 /**
  * Retrives an entity by its primary key.
  *
@@ -327,7 +339,7 @@ T findOneBySql(String sql, String[] selectionArgs);
 
 ```
 
-```java
+``` java
 /**
  * Returns all instances of the type.
  *
@@ -372,7 +384,7 @@ List<T> findListBySql(String sql, String[] selectionArgs);
 
 ### delete()
 
-```java
+``` java
 /**
  * Deletes the entity with the given id.
  * 
@@ -413,7 +425,7 @@ int deleteByFields(String selection, String[] selectionArgs);
 
 ### exists()
 
-```java
+``` java
 /**
  * Returns whether an entity with the given id exists.
  *
@@ -429,7 +441,7 @@ boolean exists(ID id);
 
 ### count()
 
-```java
+``` java
 /**
  * Returns the number of entities available.
  *
@@ -469,23 +481,23 @@ long countByFields(String selections, String[] selectionArgs);
 
 例如，你的Dao为：
 
-```java
+``` java
 com.your.test.dao.UserDao
 ```
 
 那么生成的实现类名为：
 
-```java
+``` java
 com.your.test.dao.impl.UserDaoImpl
 ```
 
-在android studio里，自动的生成的代码在项目根目录　`build/source/apt/debug` ，这个目录由插件决定，eclipse上可以配置。
+在android studio里，自动的生成的代码在项目根目录下的`build/source/apt/debug`目录里 ，这个目录由插件决定，eclipse上可以自行配置。
 
 ### 实例化DAO
 
 框架推荐不直接调用和实例化自动生成的Impl类，而应该使用 `DaoFactory` 来实例化Dao，例如：
 
-```java
+``` java
 UserDao userDao = DaoFactory.create(UserDao.class, mSQLiteOpenHelper);
 ```
 
@@ -501,7 +513,7 @@ UserDao userDao = DaoFactory.create(UserDao.class, mSQLiteOpenHelper);
 
 例如：
 
-```java
+``` java
 public interface UserDao extends YoDao<User, Long> {
 
 }
@@ -513,11 +525,13 @@ public interface UserDao extends YoDao<User, Long> {
 
 对于接口无法满足的时候，则可以通过定义接口的方法来实现，这里必须按照指定的约定来写方法名，框架则会按照方法的定义来帮你实现。
 
+> 如果你写的方法名不被支持，则框架在编译时会提示哪一个方法定义出现了问题，请查询相关文档来修改方法的定义。
+
 以下列出所有支持的方法：
 
 #### WHERE
 
-```java
+``` java
 User findOneByName(String name);
 // SQL: select * from user where name = ? limit 1
 
@@ -531,7 +545,8 @@ List<User> findListByNameOrAge(String name, int age);
 ```
 
 #### GROUP BY
-```java
+
+``` java
 List<User> findListByNameGroupByAge(String name);
 // SQL: select * from user where name = ? group by age;
 
@@ -540,7 +555,8 @@ List<User> findListByNameGroupByAge(String name);
 ```
 
 #### ORDER BY
-```java
+
+``` java
 List<User> findListOrderByAge();
 // SQL: select * from user order by age
 
@@ -549,24 +565,28 @@ List<User> findListOrderByAgeDesc();
 ```
 
 #### UPDATE
-```java
+
+``` java
 int updateByName(User user, String name);
 // SQL: update user ... where name = ?
 ```
 
-####  DELETE
-```java
+#### DELETE
+
+``` java
 int deleteByName(String name);
 // SQL: delete from user where name = ?
 ```
 
-####  COUNT
-```java
+#### COUNT
+
+``` java
 long countByAge(int age);
 ```
 
 #### 原生SQL
-```java
+
+``` java
 @Query(value= "select * from user where name = ?")
 User findByUsername(String username);
 ```
@@ -591,8 +611,6 @@ User findByUsername(String username);
 3. `boolean`　exists语句
 4. `long`　count语句
 5. `int`　delete语句
-
-
 
 
 
